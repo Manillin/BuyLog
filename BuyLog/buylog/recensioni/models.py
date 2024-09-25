@@ -14,3 +14,6 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Recensioni di {self.utente.username} per {self.negoizio.home}"
+
+    class Meta:
+        verbose_name_plural = 'Reviews'

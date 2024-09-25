@@ -11,12 +11,18 @@ class Negozio(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = 'Negozi'
+
 
 class Prodotto(models.Model):
     nome = models.CharField(max_length=100)
 
     def __str__(self):
         return self.nome
+
+    class Meta:
+        verbose_name_plural = 'Prodotti'
 
 
 class Scontrino(models.Model):
@@ -26,6 +32,9 @@ class Scontrino(models.Model):
 
     def __str__(self):
         return f'Acquisto in: {self.negozio.nome} del {self.data}'
+
+    class Meta:
+        verbose_name_plural = 'Scontrini'
 
 
 class ListaProdotti(models.Model):
@@ -37,3 +46,6 @@ class ListaProdotti(models.Model):
 
     def __str__(self):
         return f'{self.prodotto.nome} - {self.quantita} x {self.prezzo_unitario} $'
+
+    class Meta:
+        verbose_name_plural = 'ListaProdotti'
