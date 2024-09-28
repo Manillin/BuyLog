@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}User Details:{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <h1>Logged User Details</h1>
+        <p>Username: {{ user.username }}</p>
+        <p>First Name: {{ user.first_name }}</p>
+        <p>Last Name: {{ user.last_name }}</p>
+        <p>Email: {{ user.email }}</p>
+
+
+        <!-- Form per il logout -->
+        <form id="logout-form" method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    {% else %}
+        <h1>Non sei registrato</h1>
+        <a href="{% url 'login' %}">
+            <button class="btn btn-primary">Login</button>
+        </a>
+        <a href="{% url 'register' %}">
+            <button class="btn btn-secondary">Register</button>
+        </a>
+    {% endif %}
+{% endblock %}

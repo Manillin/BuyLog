@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Carica Scontrino{% endblock %}
+
+{% block content %}
+    <h1>Carica Scontrino</h1>
+    <!-- carica_scontrino.html -->
+    <form method="POST">
+        {% csrf_token %}
+        <h2>Inserisci Scontrino</h2>
+        {{ scontrino_form.as_p }}
+    
+        <h3>Prodotti Aggiunti</h3>
+        <ul>
+        {% for prodotto in prodotti %}
+            <li>{{ prodotto.prodotto }} - {{ prodotto.quantita }} x {{ prodotto.prezzo_unitario }} €</li>
+        {% empty %}
+            <li>Nessun prodotto aggiunto</li>
+        {% endfor %}
+        </ul>
+    
+        <h3>Aggiungi Prodotto</h3>
+        {{ prodotto_form.as_p }}
+    
+        <button type="submit" name="aggiungi_prodotto">Aggiungi Prodotto</button>
+        <button type="submit" name="salva_scontrino">Salva Scontrino</button>
+    </form>
+    
+{% endblock %}

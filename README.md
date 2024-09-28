@@ -9,4 +9,19 @@ currently WIP
 - User page with details and possibility to export data in different formats.  
 
 
+# Steps: 
 
+1. Creazione webpage landing 
+2. Creazione e suddivisione del progetto in APP e creazione dei modelli 
+3. Migrazione + superutente
+4. Creazione utenti 
+
+
+
+# Currently Working on: 
+
+1. Caricamento scontrino da parte dell'utente 
+    - definire un ModelForm basato su modello Scontrino 
+    - fare una CBV - CreateView 
+    - definire un template che includa il django form 
+    - verificare funzionamento con test 

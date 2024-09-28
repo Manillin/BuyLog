@@ -9,7 +9,7 @@ class Negozio(models.Model):
     recensione_media = models.FloatField(null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.nome
 
     class Meta:
         verbose_name_plural = 'Negozi'
