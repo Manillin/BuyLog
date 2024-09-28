@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Dettagli Scontrino{% endblock %}
+
+{% block content %}
+    <h1>Dettagli Scontrino</h1>
+    <p>Negozio: {{ scontrino.negozio.nome }}</p>
+    <p>Data: {{ scontrino.data }}</p>
+    <h2>Prodotti</h2>
+    <ul>
+        {% for prodotto in prodotti %}
+            <li>{{ prodotto.prodotto.nome }} - {{ prodotto.quantita }} x {{ prodotto.prezzo_unitario }} $</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

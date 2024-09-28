@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista Scontrini{% endblock %}
+
+{% block content %}
+    <h1>I tuoi Scontrini</h1>
+    <ul>
+        {% for scontrino in scontrini %}
+            <li>
+                <a href="{% url 'scontrini:dettagli_scontrino' scontrino.id %}">
+                    Acquisto in: {{ scontrino.negozio.nome }} del {{ scontrino.data }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

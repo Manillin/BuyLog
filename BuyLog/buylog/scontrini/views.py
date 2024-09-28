@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db import models
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
@@ -183,3 +183,17 @@ def carica_scontrino(request):
 
 def successo(request):
     return render(request, 'scontrini/successo.html')
+
+
+@login_required
+def lista_scontrini(request):
+    scontrini = Scontrino.objects.filter(utente=request.user)
+    return render(request, 'scontrini/lista_scontrini.html', {'scontrini': scontrini})
+
+
+@login_required
+def dettagli_scontrino(request, scontrino_id):
+    scontrino = get_object_or_404(
+        Scontrino, id=scontrino_id, utente=request.user)
+    prodotti = scontrino.prodotti.all()
+    return render(request, 'scontrini/dettagli_scontrino.html', {'scontrino': scontrino, 'prodotti': prodotti})
