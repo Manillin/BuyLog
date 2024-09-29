@@ -174,10 +174,17 @@ def carica_scontrino(request):
             if not negozio:
                 negozio = Negozio.objects.create(nome=negozio_nome)
 
+            # NEW:
+            totale_scontrino = sum(
+                prodotto['quantita'] * prodotto['prezzo_unitario'] for prodotto in request.session['prodotti']
+            )
+
             scontrino = Scontrino.objects.create(
                 utente=request.user,
                 negozio=negozio,
-                data=scontrino_form.cleaned_data['data']
+                data=scontrino_form.cleaned_data['data'],
+                # NEW:
+                totale=totale_scontrino
             )
 
             for prodotto_dati in request.session['prodotti']:
