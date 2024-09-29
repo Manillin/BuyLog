@@ -74,3 +74,28 @@ for prodotto_dati in request.session['prodotti']:
 quando si fa `prodotto_nome = prodotto_dati['prodotto']` si sta accedendo alla chiave prodotto di ogni dizionario nella lista.  
 Poiché si sta iterando su request.session['prodotti'], prodotto_dati rappresenta ogni dizionario nella lista, quindi prodotto_dati['prodotto'] ti dà il nome del prodotto corrente nell'iterazione. (prima mela e poi pera)  
 
+
+
+
+
+## Richieste AJAX:
+
+Le richieste AJAX (Asynchronous JavaScript and XML) permettono di inviare e ricevere dati dal server in modo asincrono senza dover ricaricare l'intera pagina web. Questo migliora l'esperienza utente rendendo l'interazione con la pagina più fluida e dinamica.
+
+### Funzionamento: 
+1. Inizializzazione della Richiesta:
+    - Una richiesta AJAX viene inizializzata tramite JavaScript (spesso utilizzando librerie come jQuery per semplificare il processo).
+    - La richiesta può essere di tipo GET o POST, a seconda del tipo di operazione che si vuole eseguire.
+
+2. Invio di dati al server: 
+    - I dati vengono inviati al server come parte della richiesta.
+    - Nel caso di una richiesta POST, i dati vengono generalmente inviati nel corpo della richiesta.
+
+3. Aggiornamento della pagina web:
+    - La risposta del server viene utilizzata per aggiornare dinamicamente la pagina web senza ricaricarla completamente.
+
+
+### Vantaggi:
+- **Esperienza Utente Migliorata:** Permettono di aggiornare parti della pagina senza ricaricarla completamente, rendendo l'interazione più fluida.
+- **Efficienza:** Riduce il carico sul server e la quantità di dati trasferiti, poiché solo le parti necessarie della pagina vengono aggiornate.
+- **Interattività:** Consente di creare applicazioni web più interattive e reattive.
