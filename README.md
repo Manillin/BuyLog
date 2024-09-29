@@ -20,8 +20,19 @@ currently WIP
 
 # Currently Working on: 
 
-1. Caricamento scontrino da parte dell'utente 
+1. Caricamento scontrino da parte dell'utente [check]
     - definire un ModelForm basato su modello Scontrino 
     - fare una CBV - CreateView 
     - definire un template che includa il django form 
     - verificare funzionamento con test 
+
+
+2. Visualizzazione degli scontrini / statistiche in stile dashboard
+    - pagina dedicata per vedere scontrini 
+        - visualizzazione di un grafico [x: giorni, y: soldi]
+        - on entry: numero di scontrini messi
+        - totale di soldi spesi 
+        - numero di articoli ordinati 
+        - lista di scontrini da visualizzare (espandere)
+        - top selling products / most freq supermarcet 
+    - possibilità di usare filtri 

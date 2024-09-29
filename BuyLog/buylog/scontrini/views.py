@@ -2,13 +2,16 @@ from django.contrib import messages  # Per gestire i messaggi di avviso
 from django.contrib import messages  # Per gestire messaggi di avviso
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db import models
+from django.db.models import Sum, Count
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.views.generic import TemplateView, CreateView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from .models import Scontrino, Negozio, ListaProdotti
 from .forms import *
 from django.http import JsonResponse
+from django.utils.timezone import now, timedelta
 
 from django.utils.text import slugify  # pulire nome negozio rimuovendo spazi
 from django.db.models import Q  # ricerche case insensitive
@@ -256,3 +259,88 @@ def dettagli_scontrino(request, scontrino_id):
         Scontrino, id=scontrino_id, utente=request.user)
     prodotti = scontrino.prodotti.all()
     return render(request, 'scontrini/dettagli_scontrino.html', {'scontrino': scontrino, 'prodotti': prodotti})
+
+
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'scontrini/stats.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['user'] = user
+
+        # Filtra in base al parametro di filtro (ad es. 'all time', '1 mese', '6 mesi', ecc.)
+        filtro = self.request.GET.get('filtro', 'all_time')
+        scontrini = self.get_scontrini_filtrati(filtro, user)
+
+        # Statistiche principali
+        context['numero_scontrini'] = scontrini.count()
+        context['totale_speso'] = round(
+            scontrini.aggregate(Sum('totale'))['totale__sum'] or 0, 2)
+        context['numero_articoli'] = ListaProdotti.objects.filter(
+            scontrino__in=scontrini).aggregate(Sum('quantita'))['quantita__sum'] or 0
+
+        # Grafico: spese per giorno
+        spese_giorno = self.get_spese_per_giorno(scontrini)
+        # Converti il QuerySet in una lista di dizionari
+        context['spese_giorno'] = list(spese_giorno)
+
+        # Top prodotti e supermercati
+        context['top_prodotti'] = self.get_top_prodotti(scontrini)
+        context['top_supermercati'] = self.get_top_supermercati(scontrini)
+
+        return context
+
+    def get_scontrini_filtrati(self, filtro, user):
+        # Implementa i filtri per 1 mese, 6 mesi, 1 anno, etc.
+        if filtro == '1mese':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=30), utente=user)
+        elif filtro == '6mesi':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=180), utente=user)
+        elif filtro == '1anno':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=365), utente=user)
+        else:
+            return Scontrino.objects.filter(utente=user)
+
+    def get_spese_per_giorno(self, scontrini):
+        # Aggrega le spese per giorno
+        spese = scontrini.extra(select={'giorno': 'date(data)'}).values(
+            'giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')
+        return spese
+
+    def get_top_prodotti(self, scontrini):
+        # Aggrega i prodotti ordinati per frequenza
+        return ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+            total_ordinato=Sum('quantita')
+        ).order_by('-total_ordinato')[:5]
+
+    def get_top_supermercati(self, scontrini):
+        # Aggrega i supermercati per frequenza
+        return scontrini.values('negozio__nome').annotate(
+            frequenza=Count('negozio')
+        ).order_by('-frequenza')[:3]
+
+
+def aggiorna_grafico(request):
+    filtro = request.GET.get('filtro', 'all_time')
+    user = request.user
+
+    if filtro == '1mese':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=30), utente=user)
+    elif filtro == '6mesi':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=180), utente=user)
+    elif filtro == '1anno':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=365), utente=user)
+    else:
+        scontrini = Scontrino.objects.filter(utente=user)
+
+    spese = scontrini.extra(select={'giorno': 'date(data)'}).values(
+        'giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')
+
+    labels = [spesa['giorno'] for spesa in spese]
+    data = [spesa['spesa_giornaliera'] for spesa in spese]
+
+    return JsonResponse({'labels': labels, 'data': data})

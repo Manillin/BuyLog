@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from .views import *
 
 
@@ -12,4 +12,8 @@ urlpatterns = [
     path('dettagli/<int:scontrino_id>/',
          dettagli_scontrino, name='dettagli_scontrino'),
     path('aggiungi_prodotto/', aggiungi_prodotto, name='aggiungi_prodotto'),
+
+    #  stats:
+    path('statistiche/', DashboardView.as_view(), name='dashboard'),
+    path('aggiorna_grafico/', aggiorna_grafico, name='aggiorna_grafico')
 ]

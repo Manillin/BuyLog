@@ -29,6 +29,8 @@ class Scontrino(models.Model):
     utente = models.ForeignKey(User, on_delete=models.CASCADE)
     negozio = models.ForeignKey(Negozio, on_delete=models.CASCADE)
     data = models.DateTimeField()
+    totale = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00)  # Aggiungi questo campo
 
     def __str__(self):
         return f'Acquisto in: {self.negozio.nome} del {self.data}'
