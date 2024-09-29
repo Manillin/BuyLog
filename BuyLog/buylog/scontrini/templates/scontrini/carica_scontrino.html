@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Carica Scontrino{% endblock %}
 
@@ -18,7 +19,6 @@
         {% endfor %}
         </ul>
     
-        <!-- Pulsanti per aggiungere prodotto e salvare scontrino -->
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#aggiungiProdottoModal">
             Aggiungi Prodotto
         </button>
@@ -26,11 +26,9 @@
             Salva Scontrino
         </button>
         
-        <!-- Campo nascosto per tenere traccia del numero di prodotti -->
         <input type="hidden" id="prodotti_count" name="prodotti_count" value="{{ prodotti|length }}">
     </form>
 
-    <!-- Modale per aggiungere prodotto -->
     <div class="modal fade" id="aggiungiProdottoModal" tabindex="-1" role="dialog" aria-labelledby="aggiungiProdottoModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -62,65 +60,11 @@
         </div>
     </div>
 
-    <!-- Script JavaScript per abilitare/disabilitare il pulsante "Salva Scontrino" -->
+    <!-- Includi il file JavaScript -->
+    <script src="{% static 'scontrini/js/carica_scontrino.js' %}"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const prodottiCountElement = document.getElementById('prodotti_count');
-        const salvaScontrinoButton = document.getElementById('salva_scontrino_button');
-
-        function toggleSalvaScontrinoButton() {
-            const prodottiCount = parseInt(prodottiCountElement.value);
-            if (prodottiCount > 0) {
-                salvaScontrinoButton.disabled = false;
-            } else {
-                salvaScontrinoButton.disabled = true;
-            }
-        }
-
-        toggleSalvaScontrinoButton();
-
-        // Event listener per aggiornare il conteggio dei prodotti
-        document.getElementById('addProductButton').addEventListener('click', function() {
-            const quantita = document.getElementById('quantita').value;
-            const prezzoUnitario = document.getElementById('prezzo_unitario').value;
-            const nomeProdotto = document.getElementById('nome_prodotto').value;
-
-            if (quantita && prezzoUnitario && nomeProdotto) {
-                // Invia una richiesta AJAX per aggiungere il prodotto
-                $.ajax({
-                    type: 'POST',
-                    url: '{% url "scontrini:aggiungi_prodotto" %}',
-                    data: {
-                        'quantita': quantita,
-                        'prezzo_unitario': prezzoUnitario,
-                        'nome_prodotto': nomeProdotto,
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            prodottiCountElement.value = response.prodotti_count;
-                            toggleSalvaScontrinoButton();
-
-                            // Aggiorna la lista dei prodotti
-                            const prodottiList = document.getElementById('prodotti-list');
-                            const noProdotti = document.getElementById('no-prodotti');
-                            if (noProdotti) {
-                                noProdotti.remove();
-                            }
-                            const newProduct = document.createElement('li');
-                            newProduct.textContent = `${nomeProdotto} - ${quantita} x ${prezzoUnitario} €`;
-                            prodottiList.appendChild(newProduct);
-
-                            // Resetta i campi del modale
-                            document.getElementById('aggiungiProdottoForm').reset();
-
-                            // Chiudi il modale
-                            $('#aggiungiProdottoModal').modal('hide');
-                        }
-                    }
-                });
-            }
-        });
-    });
+        // Passa le variabili Django al file JavaScript
+        const aggiungi_prodotto_url = "{% url 'scontrini:aggiungi_prodotto' %}";
+        const csrf_token = "{{ csrf_token }}";
     </script>
 {% endblock %}

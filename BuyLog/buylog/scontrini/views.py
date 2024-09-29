@@ -213,19 +213,24 @@ def carica_scontrino(request):
         'prodotti': prodotti_nella_sessione
     })
 
+# Handler della richiesta AJAX mandata da js per aggiungere un prodotto alla sessione
+
 
 def aggiungi_prodotto(request):
     if request.method == 'POST':
+        # recupero dati forniti dal modale
         quantita = request.POST.get('quantita')
         prezzo_unitario = request.POST.get('prezzo_unitario')
         nome_prodotto = request.POST.get('nome_prodotto')
 
+        # controllo integrità e aggiungo il dizionario alla sessione se valido
         if quantita and prezzo_unitario and nome_prodotto:
             prodotto_dati = {
                 'quantita': float(quantita),
                 'prezzo_unitario': float(prezzo_unitario),
                 'prodotto': nome_prodotto
             }
+            # nel caso sia il primo prodotto caricato, creo la lista di dizionari prodotto
             if 'prodotti' not in request.session:
                 request.session['prodotti'] = []
             request.session['prodotti'].append(prodotto_dati)
