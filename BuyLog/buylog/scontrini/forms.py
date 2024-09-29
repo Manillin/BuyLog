@@ -11,16 +11,18 @@ class ScontrinoForm(forms.ModelForm):
     class Meta:
         model = Scontrino
         fields = ['data']
-
-    widgets = {
-        # Widget per selezionare solo la data
-        'data': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
-    }
+        widgets = {
+            # Widget per selezionare solo la data
+            'data': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        }
 
     def __init__(self, *args, **kwargs):
         super(ScontrinoForm, self).__init__(*args, **kwargs)
         # Imposta la data odierna come valore di default
         self.fields['data'].initial = timezone.now().date()
+        # Format data
+        self.fields['data'].widget.format = '%Y-%m-%d'
+        self.fields['data'].input_formats = ['%Y-%m-%d']
 
 
 class ListaProdottiForm(forms.ModelForm):

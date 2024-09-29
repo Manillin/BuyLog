@@ -4,29 +4,123 @@
 
 {% block content %}
     <h1>Carica Scontrino</h1>
-    <!-- carica_scontrino.html -->
     <form method="POST">
         {% csrf_token %}
         <h2>Inserisci Scontrino</h2>
         {{ scontrino_form.as_p }}
     
         <h3>Prodotti Aggiunti</h3>
-        <ul>
+        <ul id="prodotti-list">
         {% for prodotto in prodotti %}
             <li>{{ prodotto.prodotto }} - {{ prodotto.quantita }} x {{ prodotto.prezzo_unitario }} €</li>
         {% empty %}
-            <li>Nessun prodotto aggiunto</li>
+            <li id="no-prodotti">Nessun prodotto aggiunto</li>
         {% endfor %}
         </ul>
     
-        <h3>Aggiungi Prodotto</h3>
-        {{ prodotto_form.as_p }}
-    
-        <button type="submit" name="aggiungi_prodotto">Aggiungi Prodotto</button>
-        <button type="submit" name="salva_scontrino">Salva Scontrino</button>
+        <!-- Pulsanti per aggiungere prodotto e salvare scontrino -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#aggiungiProdottoModal">
+            Aggiungi Prodotto
+        </button>
+        <button type="submit" name="salva_scontrino" id="salva_scontrino_button" class="btn btn-success" disabled>
+            Salva Scontrino
+        </button>
+        
+        <!-- Campo nascosto per tenere traccia del numero di prodotti -->
+        <input type="hidden" id="prodotti_count" name="prodotti_count" value="{{ prodotti|length }}">
     </form>
-    
-    
-    
-    
+
+    <!-- Modale per aggiungere prodotto -->
+    <div class="modal fade" id="aggiungiProdottoModal" tabindex="-1" role="dialog" aria-labelledby="aggiungiProdottoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aggiungiProdottoModalLabel">Aggiungi Prodotto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="aggiungiProdottoForm">
+                        <div class="form-group">
+                            <label for="quantita">Quantità</label>
+                            <input type="number" class="form-control" id="quantita" name="quantita" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prezzo_unitario">Prezzo Unitario</label>
+                            <input type="number" step="0.01" class="form-control" id="prezzo_unitario" name="prezzo_unitario" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nome_prodotto">Nome Prodotto</label>
+                            <input type="text" class="form-control" id="nome_prodotto" name="nome_prodotto" required>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="addProductButton">Aggiungi</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script JavaScript per abilitare/disabilitare il pulsante "Salva Scontrino" -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const prodottiCountElement = document.getElementById('prodotti_count');
+        const salvaScontrinoButton = document.getElementById('salva_scontrino_button');
+
+        function toggleSalvaScontrinoButton() {
+            const prodottiCount = parseInt(prodottiCountElement.value);
+            if (prodottiCount > 0) {
+                salvaScontrinoButton.disabled = false;
+            } else {
+                salvaScontrinoButton.disabled = true;
+            }
+        }
+
+        toggleSalvaScontrinoButton();
+
+        // Event listener per aggiornare il conteggio dei prodotti
+        document.getElementById('addProductButton').addEventListener('click', function() {
+            const quantita = document.getElementById('quantita').value;
+            const prezzoUnitario = document.getElementById('prezzo_unitario').value;
+            const nomeProdotto = document.getElementById('nome_prodotto').value;
+
+            if (quantita && prezzoUnitario && nomeProdotto) {
+                // Invia una richiesta AJAX per aggiungere il prodotto
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "scontrini:aggiungi_prodotto" %}',
+                    data: {
+                        'quantita': quantita,
+                        'prezzo_unitario': prezzoUnitario,
+                        'nome_prodotto': nomeProdotto,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            prodottiCountElement.value = response.prodotti_count;
+                            toggleSalvaScontrinoButton();
+
+                            // Aggiorna la lista dei prodotti
+                            const prodottiList = document.getElementById('prodotti-list');
+                            const noProdotti = document.getElementById('no-prodotti');
+                            if (noProdotti) {
+                                noProdotti.remove();
+                            }
+                            const newProduct = document.createElement('li');
+                            newProduct.textContent = `${nomeProdotto} - ${quantita} x ${prezzoUnitario} €`;
+                            prodottiList.appendChild(newProduct);
+
+                            // Resetta i campi del modale
+                            document.getElementById('aggiungiProdottoForm').reset();
+
+                            // Chiudi il modale
+                            $('#aggiungiProdottoModal').modal('hide');
+                        }
+                    }
+                });
+            }
+        });
+    });
+    </script>
 {% endblock %}
