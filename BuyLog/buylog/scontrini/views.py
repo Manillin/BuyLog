@@ -1,8 +1,11 @@
+from django.contrib import messages  # Per gestire i messaggi di avviso
+from django.contrib import messages  # Per gestire messaggi di avviso
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db import models
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import Scontrino, Negozio, ListaProdotti
 from .forms import *
 
@@ -104,32 +107,46 @@ def carica_scontrino(request):
     if 'prodotti' not in request.session:
         request.session['prodotti'] = []
 
-    # Gestione aggiunta prodotto
+    # Conserviamo il nome del negozio nella sessione
+    negozio_nome_sessione = request.session.get('negozio_nome', '')
+
+    # Gestione aggiunta prodotto - 'aggiungi_prodotto' è il nome del bottone nel tmplt (vuol dire cliccato)
     if request.method == 'POST' and 'aggiungi_prodotto' in request.POST:
         prodotto_form = ListaProdottiForm(request.POST)
+        scontrino_form = ScontrinoForm(request.POST)
+
+        # Se il form del PRODOTTO è valido, lo aggiungiamo alla sessione
         if prodotto_form.is_valid():
             prodotto_dati = prodotto_form.cleaned_data
-
-            # Convertiamo quantita e prezzo_unitario in tipi serializzabili
+            # Convertiamo i campi in tipi serializzabili (float)
             prodotto_dati['quantita'] = float(prodotto_dati['quantita'])
             prodotto_dati['prezzo_unitario'] = float(
                 prodotto_dati['prezzo_unitario'])
 
+            # Aggiungiamo i prodotti serializzati al buffer 'prodotti' della sessione
             request.session['prodotti'].append(prodotto_dati)
-            # Necessario per salvare i cambiamenti nella sessione
+            # sessione modificata
             request.session.modified = True
 
+        # Se il form del negozio è valido, salviamo il nome del negozio nella sessione
+        if scontrino_form.is_valid():
+            negozio_nome = scontrino_form.cleaned_data['negozio_nome'].strip()
+            # Memorizziamo il nome del negozio nella sessione
+            request.session['negozio_nome'] = negozio_nome
+
+        # TODO: da capire il redirect
         return redirect('scontrini:carica_scontrino')
 
-    # Gestione salvataggio scontrino
+    # Gestione salvataggio scontrino - 'salva_scontrino' è il nome del bottone nel tmplt
     elif request.method == 'POST' and 'salva_scontrino' in request.POST:
         scontrino_form = ScontrinoForm(request.POST)
         if scontrino_form.is_valid():
+            # TODO: come mai riprendo il nome del negozio ?
             negozio_nome = scontrino_form.cleaned_data['negozio_nome'].strip()
             negozio_nome_pulito = slugify(
                 negozio_nome, allow_unicode=True).replace("-", "").lower()
 
-            # Controlliamo se il negozio esiste nel database (case-insensitive e senza spazi)
+            # Controlliamo se il negozio esiste nel database
             negozio = Negozio.objects.filter(
                 Q(nome__iexact=negozio_nome_pulito) | Q(nome__icontains=negozio_nome_pulito.replace(" ", ""))).first()
 
@@ -143,13 +160,13 @@ def carica_scontrino(request):
                 data=scontrino_form.cleaned_data['data']
             )
 
-            # Aggiungiamo i prodotti salvati dalla sessione allo scontrino
+            # Aggiungiamo i prodotti salvati dalla sessione allo scontrino # da capire
             for prodotto_dati in request.session['prodotti']:
                 prodotto_nome = prodotto_dati['prodotto']
                 prodotto_nome_pulito = slugify(
                     prodotto_nome, allow_unicode=True).replace("-", "").lower()
 
-                # Troviamo o creiamo il prodotto
+                # Controllo se prodotto esiste, se non esiste lo creo nel DB
                 prodotto = Prodotto.objects.filter(
                     nome__iexact=prodotto_nome_pulito).first()
                 if not prodotto:
@@ -165,13 +182,18 @@ def carica_scontrino(request):
 
             # Puliamo la sessione dopo il salvataggio
             del request.session['prodotti']
+            # Pulisci il nome del negozio dalla sessione
+            del request.session['negozio_nome']
 
             return redirect('scontrini:successo')
 
     else:
-        scontrino_form = ScontrinoForm()
+        # Se non stiamo facendo una richiesta POST, carichiamo il form con il negozio salvato
+        scontrino_form = ScontrinoForm(
+            initial={'negozio_nome': negozio_nome_sessione})
         prodotto_form = ListaProdottiForm()
 
+    # Mostra la lista dei prodotti aggiunti finora
     prodotti_nella_sessione = request.session.get('prodotti', [])
 
     return render(request, 'scontrini/carica_scontrino.html', {
