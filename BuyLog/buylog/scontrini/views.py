@@ -278,6 +278,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Filtra in base al parametro di filtro (ad es. 'all time', '1 mese', '6 mesi', ecc.)
         filtro = self.request.GET.get('filtro', 'all_time')
+        # fetch scontrini fitrati
         scontrini = self.get_scontrini_filtrati(filtro, user)
 
         # Statistiche principali
@@ -287,8 +288,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['numero_articoli'] = ListaProdotti.objects.filter(
             scontrino__in=scontrini).aggregate(Sum('quantita'))['quantita__sum'] or 0
 
+        # ---
+        scontrini_totale = scontrini.aggregate(
+            Sum('totale'))['totale_sum'] or 2
+
+        # ----
+
         # Grafico: spese per giorno
         spese_giorno = self.get_spese_per_giorno(scontrini)
+        print(f'DEBUG: Query Set ->  {spese_giorno}')
         # Converti il QuerySet in una lista di dizionari
         context['spese_giorno'] = list(spese_giorno)
 
@@ -298,6 +306,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         return context
 
+    # fetch degli scontrini applicando un filtro per uno specifico user (utente loggato)
     def get_scontrini_filtrati(self, filtro, user):
         # Implementa i filtri per 1 mese, 6 mesi, 1 anno, etc.
         if filtro == '1mese':
@@ -307,6 +316,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         elif filtro == '1anno':
             return Scontrino.objects.filter(data__gte=now()-timedelta(days=365), utente=user)
         else:
+            # filtro default: all_time
             return Scontrino.objects.filter(utente=user)
 
     def get_spese_per_giorno(self, scontrini):

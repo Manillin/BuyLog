@@ -75,6 +75,21 @@ quando si fa `prodotto_nome = prodotto_dati['prodotto']` si sta accedendo alla c
 Poiché si sta iterando su request.session['prodotti'], prodotto_dati rappresenta ogni dizionario nella lista, quindi prodotto_dati['prodotto'] ti dà il nome del prodotto corrente nell'iterazione. (prima mela e poi pera)  
 
 
+---
+
+
+### DashboardView (CBV):
+
+bla bla bla 
+
+
+
+**Query:**  
+- `scontrini_tot = scontrini.aggregate(Sum('totale'))['totale_sum'] or 2`
+    - `queryset.aggregate()` applica una funzione aggregata definita tra i parametri a tutti gli elementi del queryset
+    - `Sum('totale')` funzione aggregata che calcola il totale della somma di tutti i campi 'totale' del queryset 
+    - `.aggregate(...)['key']` keyè la chiave che diamo al dizionario che restituisce aggregate, nell'esempio con 3 scontrini otteniamo: `{'totale__sum': 351.50}`.  
+    
 
 
 
