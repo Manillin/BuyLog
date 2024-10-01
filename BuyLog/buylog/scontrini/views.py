@@ -288,15 +288,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['numero_articoli'] = ListaProdotti.objects.filter(
             scontrino__in=scontrini).aggregate(Sum('quantita'))['quantita__sum'] or 0
 
-        # ---
-        scontrini_totale = scontrini.aggregate(
-            Sum('totale'))['totale_sum'] or 2
-
-        # ----
-
         # Grafico: spese per giorno
         spese_giorno = self.get_spese_per_giorno(scontrini)
-        print(f'DEBUG: Query Set ->  {spese_giorno}')
         # Converti il QuerySet in una lista di dizionari
         context['spese_giorno'] = list(spese_giorno)
 

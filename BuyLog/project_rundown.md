@@ -85,13 +85,36 @@ bla bla bla
 
 
 **Query:**  
-- `scontrini_tot = scontrini.aggregate(Sum('totale'))['totale_sum'] or 2`
+1. `scontrini_tot = scontrini.aggregate(Sum('totale'))['totale_sum'] or 2`
     - `queryset.aggregate()` applica una funzione aggregata definita tra i parametri a tutti gli elementi del queryset
     - `Sum('totale')` funzione aggregata che calcola il totale della somma di tutti i campi 'totale' del queryset 
-    - `.aggregate(...)['key']` keyè la chiave che diamo al dizionario che restituisce aggregate, nell'esempio con 3 scontrini otteniamo: `{'totale__sum': 351.50}`.  
-    
+    - `.aggregate(...)['key']` key è la chiave che diamo al dizionario che restituisce aggregate, nell'esempio con 3 scontrini otteniamo: `{'totale__sum': 351.50}`.  
 
 
+
+2. `spese = scontrini.extra(select={'giorno': 'date(data)'}).values('giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')`
+    - `.extra(query)` permette di aggiungere una colonna con dati estratti da un clausola SQL personalizzata, in questo caso si sta prendendo dal campo `data` solo il 'date' senza l'ora, usando la funzione sql `date()`.  
+    - `.values('giorno')` mi trasforma il queryset in una lista di dizionari con solo il campo specificato tra i parametri, in questo caso: `{'giorno': '2023-01-01'}, ...`
+
+    - `.annotate(spesa_giornaliera = Sum('totale'))` Aggiunge una colonna a ciascun dizionario nel queryset, e in base alla funzione aggregata specificata tra i parametri raggruppa automaticamente le entry con lo stesso valore specificato (nell'esempio con stesso valore in 'giorno') ed esegue la funzione aggregata.  
+    **nota:** Per poter usare .annotate e raggruppare query in base a un attributo bisogna prima usare .values per creare la lista di dizionari.
+    Inoltre in questa query arrivati a questo punto abbiamo solo il campo 'giorno' ma riusciamo comunque
+    ad andare a calcolare il totale in quanto django mantiene il collegamento con il db e sa come fare 
+    operazioni che includano attributi della tabella originale ma che magari non sono inculsi in questo
+    punto della trasformazione.  
+
+
+3. `return ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(total_ordinato=Sum('quantita')).order_by('-total_ordinato')[:5]`
+    - `.filter()` prende la lista di scontrini di un utente e va in ListaProdotti per filtrare tutti i prodotti relativi a quei scontrini (scontrino legato come fk in ListaProdotti).  
+    - `.values()` trasforma il qs in lista dizionari con unicamente il campo `nome` dalla relazione `prodotto`, notiamo che accediamo a prodotto IN nome (tramite underscore '_').  
+    - `.annotate(total_ordinato=Sum('quantita'))` crea una nuova tabella di nome total_ordinato e aggrega le entry con stesso nome prodotto sommando i valori di quantità per ogni prodotto uguale ottenendo un valore che rappresenta il numero di prodotti ordinati in totale.  
+    - `.orderby('-total_ordinato')` si ordinano i dizionari del qs in base a questo valore in ordine decrescente (sepcificato dal meno davanti all'attributo di ordinamento).   
+    - `[:5]` si fa slicing e si prendono unicamente i primi 5 elementi 
+
+
+4. Capire bene la differenza tra `aggregate` e `annotate`:
+    - **aggregate**: Calcola valori aggregati su un intero queryset e restituisce un dizionario.
+    - **annotate**: Calcola valori aggregati per ciascun elemento del queryset e aggiunge i risultati come nuovi campi.
 
 ## Richieste AJAX:
 
