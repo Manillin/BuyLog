@@ -4,78 +4,47 @@
 {% block title %}Dashboard Statistiche{% endblock %}
 
 {% block content %}
-<!-- Navbar sottile con scritte cliccabili -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Dashboard</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'scontrini:carica_scontrino' %}">Carica</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'scontrini:dashboard' %}">Statistiche</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'scontrini:scontrinilanding' %}">Profilo</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
 <div class="container mt-5">
-    <!-- Titolo principale -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Dashboard Statistiche</h1>
-        <span class="text-muted">Utente: {{ user }}</span>
-    </div>
-
-    <!-- Sezione Statistiche -->
+    <h1 class="mb-4">Dashboard Statistiche {{ user }}</h1>
     <div class="row">
         <div class="col-md-4">
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Statistiche: {{ filtro_attuale|default:"Globali" }}</h5>
-                    <p class="card-text">Numero di scontrini: <strong>{{ numero_scontrini }}</strong></p>
-                    <p class="card-text">Totale speso: <strong>{{ totale_speso|floatformat:2 }} €</strong></p>
-                    <p class="card-text">Numero di articoli ordinati: <strong>{{ numero_articoli }}</strong></p>
+                    <h5 class="card-title">Statistiche Globali</h5>
+                    <p class="card-text">Numero di scontrini: {{ numero_scontrini }}</p>
+                    <p class="card-text">Totale speso: {{ totale_speso|floatformat:2 }} €</p>
+                    <p class="card-text">Numero di articoli ordinati: {{ numero_articoli }}</p>
                 </div>
             </div>
         </div>
-
-        <!-- Grafico delle Spese -->
         <div class="col-md-8">
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Grafico delle Spese</h5>
                     <canvas id="speseGrafico"></canvas>
+
+                    <!-- Generazione dei dati JSON sicuri usando json_script -->
                     {{ spese_giorno|json_script:"speseData" }}
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Filtri con pulsanti moderni -->
     <div class="row mt-4">
         <div class="col-md-12 text-center">
             <div class="btn-group" role="group" aria-label="Filtri">
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1mese">1 Mese</button>
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="6mesi">6 Mesi</button>
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1anno">1 Anno</button>
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="all_time">All Time</button>
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="1mese">1 Mese</button>
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="6mesi">6 Mesi</button>
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="1anno">1 Anno</button>
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="all_time">All Time</button>
             </div>
         </div>
     </div>
-
-    <!-- Sezione Top Prodotti e Supermercati -->
     <div class="row mt-4">
-        <!-- Top Prodotti -->
         <div class="col-md-6">
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Top Prodotti</h5>
-                    <table class="table table-striped">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>Prodotto</th>
@@ -94,13 +63,11 @@
                 </div>
             </div>
         </div>
-
-        <!-- Top Supermercati -->
         <div class="col-md-6">
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Top Supermercati</h5>
-                    <table class="table table-striped">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>Supermercato</th>
@@ -122,8 +89,9 @@
     </div>
 </div>
 
-<!-- Inclusione di Chart.js e Luxon -->
+<!-- Chart.js per il grafico -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Aggiungi Luxon e l'adattatore -->
 <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
 <!-- Aggiungi jQuery -->
