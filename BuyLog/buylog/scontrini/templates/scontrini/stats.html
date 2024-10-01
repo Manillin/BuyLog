@@ -82,7 +82,7 @@
                                 <th>Quantità</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="top-prodotti">
                             {% for prodotto in top_prodotti %}
                             <tr>
                                 <td>{{ prodotto.prodotto__nome }}</td>
@@ -107,7 +107,7 @@
                                 <th>Visite</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="top-supermercati">
                             {% for supermercato in top_supermercati %}
                             <tr>
                                 <td>{{ supermercato.negozio__nome }}</td>

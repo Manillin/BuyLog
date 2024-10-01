@@ -278,6 +278,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Filtra in base al parametro di filtro (ad es. 'all time', '1 mese', '6 mesi', ecc.)
         filtro = self.request.GET.get('filtro', 'all_time')
+        context['filtro_attuale'] = filtro
         # fetch scontrini fitrati
         scontrini = self.get_scontrini_filtrati(filtro, user)
 
@@ -353,4 +354,27 @@ def aggiorna_grafico(request):
     labels = [spesa['giorno'] for spesa in spese]
     data = [spesa['spesa_giornaliera'] for spesa in spese]
 
-    return JsonResponse({'labels': labels, 'data': data})
+    # Statistiche principali
+    numero_scontrini = scontrini.count()
+    totale_speso = round(scontrini.aggregate(
+        Sum('totale'))['totale__sum'] or 0, 2)
+    numero_articoli = ListaProdotti.objects.filter(
+        scontrino__in=scontrini).aggregate(Sum('quantita'))['quantita__sum'] or 0
+
+    # Top prodotti e supermercati
+    top_prodotti = list(ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+        total_ordinato=Sum('quantita')).order_by('-total_ordinato')[:5])
+
+    top_supermercati = list(scontrini.values('negozio__nome').annotate(
+        frequenza=Count('negozio')).order_by('-frequenza')[:3])
+
+    return JsonResponse({
+        'labels': labels,
+        'data': data,
+        'numero_scontrini': numero_scontrini,
+        'totale_speso': totale_speso,
+        'numero_articoli': numero_articoli,
+        'top_prodotti': top_prodotti,
+        'top_supermercati': top_supermercati,
+        'filtro_attuale': filtro
+    })
