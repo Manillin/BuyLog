@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    console.log("DOM completamente caricato e analizzato"); // Log di debug
+
     // Ottieni i dati JSON direttamente dal tag json_script generato da Django
     var speseData = JSON.parse(document.getElementById('speseData').textContent);
 
@@ -42,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Funzione per aggiornare il grafico tramite AJAX
     function aggiornaGrafico(filtro) {
+        console.log("Chiamata AJAX per aggiornare il grafico con filtro:", filtro); // Log di debug
         $.ajax({
             url: '/scontrini/aggiorna_grafico/',
             data: {
@@ -60,6 +64,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Gestore di eventi per i pulsanti di filtro
+    document.querySelectorAll('.filtro-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            var filtro = this.getAttribute('data-filtro');
+            console.log("pulsante cliccato con filtro:", filtro); // Log di debug
+            aggiornaGrafico(filtro);
+        });
+    });
 
     // Esempio di chiamata AJAX per aggiornare il grafico
     aggiornaGrafico('all_time');

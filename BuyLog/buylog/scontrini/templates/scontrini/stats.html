@@ -30,6 +30,16 @@
         </div>
     </div>
     <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <div class="btn-group" role="group" aria-label="Filtri">
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="1mese">1 Mese</button>
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="6mesi">6 Mesi</button>
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="1anno">1 Anno</button>
+                <button type="button" class="btn btn-primary filtro-btn" data-filtro="all_time">All Time</button>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
@@ -84,8 +94,8 @@
 <!-- Aggiungi Luxon e l'adattatore -->
 <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
-
-
+<!-- Aggiungi jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Collegamento allo script per gestire i grafici -->
 <script src="{% static 'scontrini/js/stats.js' %}"></script>
 
