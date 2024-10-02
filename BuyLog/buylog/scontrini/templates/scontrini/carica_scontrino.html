@@ -4,6 +4,27 @@
 {% block title %}Carica Scontrino{% endblock %}
 
 {% block content %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Dashboard</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'scontrini:carica_scontrino' %}">Carica</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'scontrini:dashboard' %}">Statistiche</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'scontrini:scontrinilanding' %}">Profilo</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
     <h1>Carica Scontrino</h1>
     <form method="POST">
         {% csrf_token %}

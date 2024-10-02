@@ -96,6 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Esempio di chiamata AJAX per aggiornare il grafico
-    aggiornaGrafico('all_time');
+    // ? aggiornaGrafico('all_time');
 });
 

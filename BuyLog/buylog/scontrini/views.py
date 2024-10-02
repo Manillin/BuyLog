@@ -351,6 +351,8 @@ def aggiorna_grafico(request):
     spese = scontrini.extra(select={'giorno': 'date(data)'}).values(
         'giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')
 
+    # es query: {'giorno': '2023-08-08', 'spesa_giornaliera': Decimal('25')
+
     labels = [spesa['giorno'] for spesa in spese]
     data = [spesa['spesa_giornaliera'] for spesa in spese]
 

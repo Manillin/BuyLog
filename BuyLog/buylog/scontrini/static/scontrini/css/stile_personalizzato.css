@@ -1,0 +1,21 @@
+/* Custom styles */
+.container {
+    max-width: 800px;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.form-control {
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.btn {
+    border-radius: 8px;
+}
+
+#prodotti-list .list-group-item {
+    border-radius: 6px;
+}
