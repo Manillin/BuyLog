@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Scontrini{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'scontrini/css/stile_personalizzato.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar comune -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Dashboard</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'scontrini:carica_scontrino' %}">Carica</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'scontrini:dashboard' %}">Statistiche</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'scontrini:scontrinilanding' %}">Profilo</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer moderno -->
+    <footer class="bg-light text-center text-lg-start mt-5">
+        <div class="container p-4">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                    <h5 class="text-uppercase">Scontrini</h5>
+                    <p>
+                        Gestisci i tuoi scontrini e visualizza le statistiche in modo semplice e intuitivo.
+                    </p>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase">Link Utili</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li>
+                            <a href="{% url 'scontrini:carica_scontrino' %}" class="text-dark">Carica Scontrino</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'scontrini:dashboard' %}" class="text-dark">Statistiche</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'scontrini:scontrinilanding' %}" class="text-dark">Profilo</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="text-center p-3 bg-dark text-white">
+            © 2023 Scontrini. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

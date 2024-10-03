@@ -4,7 +4,7 @@
 }
 
 .card {
-    border-radius: 12px;
+    border-radius: 15px;
 }
 
 .form-control {
@@ -14,6 +14,15 @@
 
 .btn {
     border-radius: 8px;
+}
+
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.list-group-item {
+    border-radius: 10px;
 }
 
 #prodotti-list .list-group-item {

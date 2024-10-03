@@ -14,6 +14,7 @@ class ScontrinoForm(forms.ModelForm):
         widgets = {
             # Widget per selezionare solo la data
             'data': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'negozio_nome': forms.TextInput(attrs={'class': 'form-control'})
         }
 
     def __init__(self, *args, **kwargs):
