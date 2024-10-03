@@ -14,5 +14,10 @@ urlpatterns = [
     path('aggiungi_prodotto/', aggiungi_prodotto, name='aggiungi_prodotto'),
     #  stats:
     path('statistiche/', DashboardView.as_view(), name='dashboard'),
-    path('aggiorna_grafico/', aggiorna_grafico, name='aggiorna_grafico')
+    path('aggiorna_grafico/', aggiorna_grafico, name='aggiorna_grafico'),
+
+    # global stats & search
+    path('tutti_prodotti/', TuttiProdottiView.as_view(), name='tutti_prodotti'),
+    path('tutti_supermercati/', TuttiSupermercatiView.as_view(),
+         name='tutti_supermercati'),
 ]

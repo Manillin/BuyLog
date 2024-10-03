@@ -1,0 +1,52 @@
+{% extends 'scontrini/base.html' %}
+{% load static %}
+
+{% block title %}Tutti i Prodotti{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Tutti i Prodotti</h1>
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <div class="btn-group" role="group" aria-label="Filtri">
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1mese">1 Mese</button>
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="6mesi">6 Mesi</button>
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1anno">1 Anno</button>
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="all_time">All Time</button>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <input type="text" id="search-bar" class="form-control" placeholder="Cerca prodotto...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome Prodotto</th>
+                    <th>Quantità Ordinata</th>
+                    <th>Totale Speso</th>
+                    <th>Numero di Supermercati</th>
+                    <th>Prezzo Medio</th>
+                </tr>
+            </thead>
+            <tbody id="prodotti-list">
+                {% for prodotto in prodotti %}
+                <tr>
+                    <td>{{ prodotto.prodotto__nome }}</td>
+                    <td>{{ prodotto.quantita_ordinata }}</td>
+                    <td>{{ prodotto.totale_speso|floatformat:2 }} €</td>
+                    <td>{{ prodotto.numero_supermercati }}</td>
+                    <td>{{ prodotto.prezzo_medio|floatformat:2 }} €</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'scontrini/js/tutti_prodotti.js' %}"></script>
+{% endblock %}

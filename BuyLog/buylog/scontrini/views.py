@@ -2,7 +2,7 @@ from django.contrib import messages  # Per gestire i messaggi di avviso
 from django.contrib import messages  # Per gestire messaggi di avviso
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db import models
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Avg
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView
 from django.contrib.auth.decorators import login_required
@@ -380,3 +380,85 @@ def aggiorna_grafico(request):
         'top_supermercati': top_supermercati,
         'filtro_attuale': filtro
     })
+
+    # Visualizzazione GLOBALE:
+
+
+class TuttiProdottiView(LoginRequiredMixin, TemplateView):
+    template_name = 'scontrini/tutti_prodotti.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        filtro = self.request.GET.get('filtro', 'all_time')
+        context['filtro_attuale'] = filtro
+        prodotti = self.get_prodotti_filtrati(filtro, user)
+        context['prodotti'] = prodotti
+        return context
+
+    def get_prodotti_filtrati(self, filtro, user):
+        scontrini = self.get_scontrini_filtrati(filtro, user)
+        prodotti = ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+            quantita_ordinata=Sum('quantita'),
+            totale_speso=Sum('quantita') * Avg('prezzo_unitario'),
+            numero_supermercati=Count('scontrino__negozio', distinct=True),
+            prezzo_medio=Avg('prezzo_unitario')
+        ).order_by('-quantita_ordinata')
+        return prodotti
+
+    def get_scontrini_filtrati(self, filtro, user):
+        if filtro == '1mese':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=30), utente=user)
+        elif filtro == '6mesi':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=180), utente=user)
+        elif filtro == '1anno':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=365), utente=user)
+        else:
+            return Scontrino.objects.filter(utente=user)
+
+
+class TuttiSupermercatiView(LoginRequiredMixin, TemplateView):
+    template_name = 'scontrini/tutti_supermercati.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        filtro = self.request.GET.get('filtro', 'all_time')
+        context['filtro_attuale'] = filtro
+        supermercati = self.get_supermercati_filtrati(filtro, user)
+        context['supermercati'] = supermercati
+        return context
+
+    def get_supermercati_filtrati(self, filtro, user):
+        scontrini = self.get_scontrini_filtrati(filtro, user)
+        supermercati = scontrini.values('negozio__nome').annotate(
+            numero_visite=Count('negozio'),
+            totale_speso=Sum('totale')
+        ).order_by('-numero_visite')
+
+        # Calcola la frequenza di visita in Python
+        for supermercato in supermercati:
+            scontrini_supermercato = scontrini.filter(
+                negozio__nome=supermercato['negozio__nome'])
+            if scontrini_supermercato.exists():
+                date_diff = (scontrini_supermercato.latest(
+                    'data').data - scontrini_supermercato.earliest('data').data).days
+                supermercato['frequenza_visita'] = date_diff / \
+                    supermercato['numero_visite']
+            else:
+                supermercato['frequenza_visita'] = 0
+
+        return supermercati
+
+    def get_scontrini_filtrati(self, filtro, user):
+        if filtro == '1mese':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=30), utente=user)
+        elif filtro == '6mesi':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=180), utente=user)
+        elif filtro == '1anno':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=365), utente=user)
+        else:
+            return Scontrino.objects.filter(utente=user)
+
+
+# df

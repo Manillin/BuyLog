@@ -1,0 +1,50 @@
+{% extends 'scontrini/base.html' %}
+{% load static %}
+
+{% block title %}Tutti i Supermercati{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Tutti i Supermercati</h1>
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <div class="btn-group" role="group" aria-label="Filtri">
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1mese">1 Mese</button>
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="6mesi">6 Mesi</button>
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1anno">1 Anno</button>
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="all_time">All Time</button>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <input type="text" id="search-bar" class="form-control" placeholder="Cerca supermercato...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome Supermercato</th>
+                    <th>Numero di Visite</th>
+                    <th>Totale Speso</th>
+                    <th>Frequenza di Visita</th>
+                </tr>
+            </thead>
+            <tbody id="supermercati-list">
+                {% for supermercato in supermercati %}
+                <tr>
+                    <td>{{ supermercato.negozio__nome }}</td>
+                    <td>{{ supermercato.numero_visite }}</td>
+                    <td>{{ supermercato.totale_speso|floatformat:2 }} €</td>
+                    <td>{{ supermercato.frequenza_visita|floatformat:2 }} giorni</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'scontrini/js/tutti_supermercati.js' %}"></script>
+{% endblock %}
