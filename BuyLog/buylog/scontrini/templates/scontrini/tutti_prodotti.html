@@ -25,23 +25,15 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Nome Prodotto</th>
-                    <th>Quantità Ordinata</th>
-                    <th>Totale Speso</th>
-                    <th>Numero di Supermercati</th>
-                    <th>Prezzo Medio</th>
+                    <th><a href="#" class="sort-link" data-ordine="-prodotto__nome">Nome Prodotto</a></th>
+                    <th><a href="#" class="sort-link" data-ordine="-quantita_ordinata">Quantità Ordinata</a></th>
+                    <th><a href="#" class="sort-link" data-ordine="-totale_speso">Totale Speso</a></th>
+                    <th><a href="#" class="sort-link" data-ordine="-numero_supermercati">Numero di Supermercati</a></th>
+                    <th><a href="#" class="sort-link" data-ordine="-prezzo_medio">Prezzo Medio</a></th>
                 </tr>
             </thead>
             <tbody id="prodotti-list">
-                {% for prodotto in prodotti %}
-                <tr>
-                    <td>{{ prodotto.prodotto__nome }}</td>
-                    <td>{{ prodotto.quantita_ordinata }}</td>
-                    <td>{{ prodotto.totale_speso|floatformat:2 }} €</td>
-                    <td>{{ prodotto.numero_supermercati }}</td>
-                    <td>{{ prodotto.prezzo_medio|floatformat:2 }} €</td>
-                </tr>
-                {% endfor %}
+                {% include 'scontrini/partials/prodotti_list.html' %}
             </tbody>
         </table>
     </div>

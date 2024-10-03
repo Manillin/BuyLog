@@ -1,0 +1,8 @@
+{% for supermercato in supermercati %}
+<tr>
+    <td>{{ supermercato.negozio__nome }}</td>
+    <td>{{ supermercato.numero_visite }}</td>
+    <td>{{ supermercato.totale_speso|floatformat:2 }} €</td>
+    <td>{{ supermercato.frequenza_visita|floatformat:2 }} giorni</td>
+</tr>
+{% endfor %}

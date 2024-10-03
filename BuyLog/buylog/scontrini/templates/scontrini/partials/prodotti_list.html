@@ -1,0 +1,9 @@
+{% for prodotto in prodotti %}
+<tr>
+    <td>{{ prodotto.prodotto__nome }}</td>
+    <td>{{ prodotto.quantita_ordinata }}</td>
+    <td>{{ prodotto.totale_speso|floatformat:2 }} €</td>
+    <td>{{ prodotto.numero_supermercati }}</td>
+    <td>{{ prodotto.prezzo_medio|floatformat:2 }} €</td>
+</tr>
+{% endfor %}

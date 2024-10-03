@@ -20,4 +20,8 @@ urlpatterns = [
     path('tutti_prodotti/', TuttiProdottiView.as_view(), name='tutti_prodotti'),
     path('tutti_supermercati/', TuttiSupermercatiView.as_view(),
          name='tutti_supermercati'),
+    path('aggiorna_tabella_supermercati/', aggiorna_tabella_supermercati,
+         name='aggiorna_tabella_supermercati'),
+    path('aggiorna_tabella_prodotti/', aggiorna_tabella_prodotti,
+         name='aggiorna_tabella_prodotti'),
 ]

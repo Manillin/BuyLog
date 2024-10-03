@@ -1,8 +1,11 @@
+from .models import Scontrino
+from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper, Max, Min
+from django.views.generic import TemplateView
 from django.contrib import messages  # Per gestire i messaggi di avviso
 from django.contrib import messages  # Per gestire messaggi di avviso
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db import models
-from django.db.models import Sum, Count, Avg
+from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView
 from django.contrib.auth.decorators import login_required
@@ -12,7 +15,7 @@ from .models import Scontrino, Negozio, ListaProdotti
 from .forms import *
 from django.http import JsonResponse
 from django.utils.timezone import now, timedelta
-
+from django.template.loader import render_to_string
 from django.utils.text import slugify  # pulire nome negozio rimuovendo spazi
 from django.db.models import Q  # ricerche case insensitive
 
@@ -391,19 +394,23 @@ class TuttiProdottiView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         filtro = self.request.GET.get('filtro', 'all_time')
+        ordine = self.request.GET.get('ordine', '-quantita_ordinata')
         context['filtro_attuale'] = filtro
-        prodotti = self.get_prodotti_filtrati(filtro, user)
+        context['ordine_attuale'] = ordine
+        prodotti = self.get_prodotti_filtrati(filtro, ordine, user)
         context['prodotti'] = prodotti
         return context
 
-    def get_prodotti_filtrati(self, filtro, user):
+    def get_prodotti_filtrati(self, filtro, ordine, user):
         scontrini = self.get_scontrini_filtrati(filtro, user)
         prodotti = ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
             quantita_ordinata=Sum('quantita'),
-            totale_speso=Sum('quantita') * Avg('prezzo_unitario'),
+            totale_speso=Sum(ExpressionWrapper(
+                F('prezzo_unitario') * F('quantita'), output_field=FloatField())),
             numero_supermercati=Count('scontrino__negozio', distinct=True),
-            prezzo_medio=Avg('prezzo_unitario')
-        ).order_by('-quantita_ordinata')
+            prezzo_medio=ExpressionWrapper(Sum(
+                F('prezzo_unitario') * F('quantita')) / Sum('quantita'), output_field=FloatField())
+        ).order_by(ordine)
         return prodotti
 
     def get_scontrini_filtrati(self, filtro, user):
@@ -417,6 +424,37 @@ class TuttiProdottiView(LoginRequiredMixin, TemplateView):
             return Scontrino.objects.filter(utente=user)
 
 
+def aggiorna_tabella_prodotti(request):
+    filtro = request.GET.get('filtro', 'all_time')
+    ordine = request.GET.get('ordine', '-quantita_ordinata')
+    user = request.user
+
+    if filtro == '1mese':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=30), utente=user)
+    elif filtro == '6mesi':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=180), utente=user)
+    elif filtro == '1anno':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=365), utente=user)
+    else:
+        scontrini = Scontrino.objects.filter(utente=user)
+
+    prodotti = ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+        quantita_ordinata=Sum('quantita'),
+        totale_speso=Sum(ExpressionWrapper(F('prezzo_unitario')
+                         * F('quantita'), output_field=FloatField())),
+        numero_supermercati=Count('scontrino__negozio', distinct=True),
+        prezzo_medio=ExpressionWrapper(Sum(
+            F('prezzo_unitario') * F('quantita')) / Sum('quantita'), output_field=FloatField())
+    ).order_by(ordine)
+
+    html = render_to_string(
+        'scontrini/partials/prodotti_list.html', {'prodotti': prodotti})
+    return JsonResponse({'html': html})
+
+
 class TuttiSupermercatiView(LoginRequiredMixin, TemplateView):
     template_name = 'scontrini/tutti_supermercati.html'
 
@@ -424,30 +462,19 @@ class TuttiSupermercatiView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         filtro = self.request.GET.get('filtro', 'all_time')
+        ordine = self.request.GET.get('ordine', '-numero_visite')
         context['filtro_attuale'] = filtro
-        supermercati = self.get_supermercati_filtrati(filtro, user)
+        context['ordine_attuale'] = ordine
+        supermercati = self.get_supermercati_filtrati(filtro, ordine, user)
         context['supermercati'] = supermercati
         return context
 
-    def get_supermercati_filtrati(self, filtro, user):
+    def get_supermercati_filtrati(self, filtro, ordine, user):
         scontrini = self.get_scontrini_filtrati(filtro, user)
         supermercati = scontrini.values('negozio__nome').annotate(
             numero_visite=Count('negozio'),
             totale_speso=Sum('totale')
-        ).order_by('-numero_visite')
-
-        # Calcola la frequenza di visita in Python
-        for supermercato in supermercati:
-            scontrini_supermercato = scontrini.filter(
-                negozio__nome=supermercato['negozio__nome'])
-            if scontrini_supermercato.exists():
-                date_diff = (scontrini_supermercato.latest(
-                    'data').data - scontrini_supermercato.earliest('data').data).days
-                supermercato['frequenza_visita'] = date_diff / \
-                    supermercato['numero_visite']
-            else:
-                supermercato['frequenza_visita'] = 0
-
+        ).order_by(ordine)
         return supermercati
 
     def get_scontrini_filtrati(self, filtro, user):
@@ -461,4 +488,28 @@ class TuttiSupermercatiView(LoginRequiredMixin, TemplateView):
             return Scontrino.objects.filter(utente=user)
 
 
-# df
+def aggiorna_tabella_supermercati(request):
+    filtro = request.GET.get('filtro', 'all_time')
+    ordine = request.GET.get('ordine', '-numero_visite')
+    user = request.user
+
+    if filtro == '1mese':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=30), utente=user)
+    elif filtro == '6mesi':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=180), utente=user)
+    elif filtro == '1anno':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=365), utente=user)
+    else:
+        scontrini = Scontrino.objects.filter(utente=user)
+
+    supermercati = scontrini.values('negozio__nome').annotate(
+        numero_visite=Count('negozio'),
+        totale_speso=Sum('totale')
+    ).order_by(ordine)
+
+    html = render_to_string(
+        'scontrini/partials/supermercati_list.html', {'supermercati': supermercati})
+    return JsonResponse({'html': html})
