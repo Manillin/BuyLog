@@ -17,17 +17,6 @@ def home(request):
                       context=ctx)
 
 
-def stats(request):
-    print(request.method)
-    return HttpResponse('You are not logged in!')
-
-
-def user(request):
-    print(request.method)
-    s = 'Welcome back User!'
-    return HttpResponse(s)
-
-
 class UserCreateView(CreateView):
     form_class = CreaUtenteCliente
     template_name = 'user_create.html'

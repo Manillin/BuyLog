@@ -5,7 +5,8 @@ from .views import *
 app_name = 'scontrini'
 
 urlpatterns = [
-    path('', scontrini_home, name='scontrinilanding'),
+    re_path(r"^$|^statistiche$|^stats$",
+            DashboardView.as_view(), name='scontrinilanding'),
     path('carica/', carica_scontrino, name='carica_scontrino'),
     path('successo/', successo, name='successo'),
     path('lista/', lista_scontrini, name='lista_scontrini'),
@@ -13,7 +14,7 @@ urlpatterns = [
          dettagli_scontrino, name='dettagli_scontrino'),
     path('aggiungi_prodotto/', aggiungi_prodotto, name='aggiungi_prodotto'),
     #  stats:
-    path('statistiche/', DashboardView.as_view(), name='dashboard'),
+    # path('statistiche/', DashboardView.as_view(), name='dashboard'),
     path('aggiorna_grafico/', aggiorna_grafico, name='aggiorna_grafico'),
 
     # global stats & search
