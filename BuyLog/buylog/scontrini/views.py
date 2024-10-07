@@ -27,12 +27,6 @@ def stats(request):
     return render(request, template_name='scontrini/stats.html', context={'message': 'User logged!'})
 
 
-def scontrini_home(request):
-    template = 'scontrini/scontrini_landing.html'
-    ctx = {'user': request.user}
-    return render(request=request, template_name=template, context=ctx)
-
-
 class ScontriniLandingView(CreateView):
     # form_class = CustomFormTBD
     template_name = 'scontrini/scontrini_landing.html'
@@ -240,7 +234,7 @@ def aggiungi_prodotto(request):
         if quantita and prezzo_unitario and nome_prodotto:
             prodotto_dati = {
                 'quantita': float(quantita),
-                'prezzo_unitario': float(prezzo_unitario),
+                'prezzo_unitario': float(),
                 'prodotto': nome_prodotto
             }
             # nel caso sia il primo prodotto caricato, creo la lista di dizionari prodotto

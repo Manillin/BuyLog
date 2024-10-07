@@ -6,7 +6,7 @@ app_name = 'scontrini'
 
 urlpatterns = [
     re_path(r"^$|^statistiche$|^stats$",
-            DashboardView.as_view(), name='scontrinilanding'),
+            DashboardView.as_view(), name='dashboard'),
     path('carica/', carica_scontrino, name='carica_scontrino'),
     path('successo/', successo, name='successo'),
     path('lista/', lista_scontrini, name='lista_scontrini'),

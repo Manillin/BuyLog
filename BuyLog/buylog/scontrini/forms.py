@@ -45,3 +45,14 @@ class ProdottoForm(forms.ModelForm):
     class Meta:
         model = Prodotto
         fields = ['nome']
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['profile_image']
+
+
+class UserUpdateForm(forms.ModelForm):
+    model = User
+    fields = ['first_name', 'last_name', 'email']

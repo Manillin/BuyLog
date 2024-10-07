@@ -1,28 +1,43 @@
 {% extends 'base.html' %}
 
-{% block title %}User Details:{% endblock %}
-
 {% block content %}
-    {% if user.is_authenticated %}
-        <h1>Logged User Details</h1>
-        <p>Username: {{ user.username }}</p>
-        <p>First Name: {{ user.first_name }}</p>
-        <p>Last Name: {{ user.last_name }}</p>
-        <p>Email: {{ user.email }}</p>
+<div class="container mt-4">
+    <h1 class="mb-4">Il tuo Profilo</h1>
 
+    <!-- Sezione immagine profilo -->
+    <div class="card mb-4">
+        <div class="card-body text-center">
+            <p>{{ user.profile.profile_image.url }}</p>  <!-- Debug: mostra il path dell'immagine -->
+            <img src="{{ user.profile.profile_image.url }}" alt="Immagine profilo" class="img-fluid rounded-circle" style="width: 150px; height: 150px;">
+            <h5 class="mt-3">{{ user.username }}</h5>
+            <p class="text-muted">{{ user.email }}</p>
+        </div>
+    </div>
 
-        <!-- Form per il logout -->
-        <form id="logout-form" method="post" action="{% url 'logout' %}">
+    <!-- Sezione per aggiornare informazioni profilo e immagine -->
+    <h2>Aggiorna le tue informazioni</h2>
+    <form method="POST" enctype="multipart/form-data">  <!-- enctype per caricare file -->
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Dati Utente</h5>
+                {{ user_form.as_p }}
+            </div>
+            <div class="col-md-6">
+                <h5>Immagine Profilo</h5>
+                {{ profile_form.as_p }}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Aggiorna Profilo</button>
+    </form>
+
+    <!-- Link per cancellare l'account -->
+    <div class="mt-4">
+        <h5>Vuoi eliminare il tuo account?</h5>
+        <form method="POST" action="{% url 'delete_user' %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Logout</button>
+            <button type="submit" class="btn btn-danger">Cancella Account</button>
         </form>
-    {% else %}
-        <h1>Non sei registrato</h1>
-        <a href="{% url 'login' %}">
-            <button class="btn btn-primary">Login</button>
-        </a>
-        <a href="{% url 'register' %}">
-            <button class="btn btn-secondary">Register</button>
-        </a>
-    {% endif %}
+    </div>
+</div>
 {% endblock %}
