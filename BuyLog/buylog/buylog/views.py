@@ -57,6 +57,11 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             messages.success(
                 request, 'Il tuo profilo è stato aggiornato con successo!')
             return redirect('user')
+        else:
+            for error in user_form.errors.values():
+                messages.error(request, error)
+            for error in profile_form.errors.values():
+                messages.error(request, error)
 
         return render(request, self.template_name, {
             'user_form': user_form,

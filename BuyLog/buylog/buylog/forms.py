@@ -32,9 +32,26 @@ class CreaUtenteCliente(UserCreationForm):
 
 
 class UserUpdateForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=50, required=True)
+    last_name = forms.CharField(max_length=50, required=True)
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(
+                'Questo username è già in uso. Scegli un altro username.')
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(
+                'Questa email è già in uso. Scegli un\'altra email.')
+        return email
 
 
 class ProfileForm(forms.ModelForm):

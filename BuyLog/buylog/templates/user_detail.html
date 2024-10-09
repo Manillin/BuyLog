@@ -5,6 +5,27 @@
 <div class="container mt-4">
     <h1 class="mb-4">Il tuo Profilo</h1>
 
+    <!-- Messaggi di successo -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% elif message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
     <!-- Sezione immagine profilo -->
     <div class="card mb-4">
         <div class="card-body text-center">
@@ -32,6 +53,10 @@
                 </tbody>
             </table>
             <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#editProfileModal">Modifica Dati</button>
+            <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger mt-3">Logout</button>
+            </form>
         </div>
     </div>
 
@@ -76,4 +101,11 @@
         </div>
     </div>
 </div>
+
+<!-- JavaScript per far sparire i messaggi dopo un certo periodo di tempo -->
+<script>
+    setTimeout(function() {
+        $('.alert').alert('close');
+    }, 5000); // 5 secondi
+</script>
 {% endblock %}
