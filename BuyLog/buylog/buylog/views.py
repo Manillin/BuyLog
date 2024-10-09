@@ -7,7 +7,6 @@ from django.contrib.auth.decorators import login_required
 from .forms import *
 from django.contrib import messages
 from scontrini.models import Scontrino
-from scontrini.forms import UserUpdateForm, ProfileForm
 
 # create your views here:
 
@@ -38,6 +37,13 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     def get_object(self):
         return self.request.user
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_form'] = UserUpdateForm(instance=self.request.user)
+        context['profile_form'] = ProfileForm(
+            instance=self.request.user.profile)
+        return context
+
     # Aggiungi metodo post per gestire l'invio del form
     def post(self, request, *args, **kwargs):
         user = self.get_object()  # ottieni l'utente
@@ -56,43 +62,3 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             'user_form': user_form,
             'profile_form': profile_form
         })
-
-
-# View per aggiornare le informazioni utente e il profilo
-
-def update_profile(request):
-    if request.method == 'POST':
-        user_form = UserUpdateForm(request.POST, instance=request.user)
-        profile_form = ProfileForm(
-            request.POST, request.FILES, instance=request.user.profile)
-
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            messages.success(
-                request, 'Il tuo profilo è stato aggiornato con successo!')
-            return redirect('user')  # Reindirizza alla pagina del profilo
-    else:
-        user_form = UserUpdateForm(instance=request.user)
-        profile_form = ProfileForm(instance=request.user.profile)
-
-    return render(request, 'user_detail.html', {
-        'user_form': user_form,
-        'profile_form': profile_form
-    })
-
-# View per cancellare l'account utente e i suoi dati correlati
-
-
-class UserDeleteView(LoginRequiredMixin, DeleteView):
-    model = User
-    template_name = 'user_confirm_delete.html'
-    success_url = reverse_lazy('home')
-
-    def get_object(self):
-        return self.request.user
-
-    def delete(self, request, *args, **kwargs):
-        # Cancella scontrini associati
-        Scontrino.objects.filter(utente=self.request.user).delete()
-        return super().delete(request, *args, **kwargs)
