@@ -1,3 +1,6 @@
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 from .models import Scontrino
 from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper, Max, Min
 from django.views.generic import TemplateView
@@ -507,3 +510,113 @@ def aggiorna_tabella_supermercati(request):
     html = render_to_string(
         'scontrini/partials/supermercati_list.html', {'supermercati': supermercati})
     return JsonResponse({'html': html})
+
+
+# Visualizzazione pagina DEMO:
+# views.py
+
+class DemoStatsView(TemplateView):
+    template_name = 'scontrini/demo_stats.html'
+
+    @method_decorator(cache_page(60 * 15))  # Cache per 15 minuti
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Verifica se i dati sono già in cache
+        cached_data = cache.get('demo_stats_data')
+        if cached_data:
+            context.update(cached_data)
+            return context
+
+        # Fetch dei dati aggregati
+        scontrini = Scontrino.objects.all()
+        spese = scontrini.extra(select={'giorno': 'date(data)'}).values(
+            'giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')
+
+        labels = [spesa['giorno'] for spesa in spese]
+        data = [spesa['spesa_giornaliera'] for spesa in spese]
+
+        numero_scontrini = scontrini.count()
+        totale_speso = round(scontrini.aggregate(
+            Sum('totale'))['totale__sum'] or 0, 2)
+        numero_articoli = ListaProdotti.objects.filter(
+            scontrino__in=scontrini).aggregate(Sum('quantita'))['quantita__sum'] or 0
+
+        top_prodotti = list(ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+            total_ordinato=Sum('quantita')).order_by('-total_ordinato')[:5])
+
+        top_supermercati = list(scontrini.values('negozio__nome').annotate(
+            frequenza=Count('negozio')).order_by('-frequenza')[:3])
+
+        context.update({
+            'labels': labels,
+            'data': data,
+            'numero_scontrini': numero_scontrini,
+            'totale_speso': totale_speso,
+            'numero_articoli': numero_articoli,
+            'top_prodotti': top_prodotti,
+            'top_supermercati': top_supermercati,
+            'filtro_attuale': 'all_time',
+            'spese_giorno': list(spese)  # Assicurati che sia una lista
+        })
+
+        # Crea una copia del contesto con solo i dati serializzabili
+        cache_data = {
+            'labels': labels,
+            'data': data,
+            'numero_scontrini': numero_scontrini,
+            'totale_speso': totale_speso,
+            'numero_articoli': numero_articoli,
+            'top_prodotti': top_prodotti,
+            'top_supermercati': top_supermercati,
+            'filtro_attuale': 'all_time',
+            'spese_giorno': list(spese)  # Assicurati che sia una lista
+        }
+
+        # Memorizza i dati in cache
+        cache.set('demo_stats_data', cache_data,
+                  60 * 15)  # Cache per 15 minuti
+
+        return context
+
+
+def aggiorna_grafico_demo(request):
+    filtro = request.GET.get('filtro', 'all_time')
+
+    if filtro == '1mese':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=30))
+    else:
+        scontrini = Scontrino.objects.all()
+
+    spese = scontrini.extra(select={'giorno': 'date(data)'}).values(
+        'giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')
+
+    labels = [spesa['giorno'] for spesa in spese]
+    data = [spesa['spesa_giornaliera'] for spesa in spese]
+
+    numero_scontrini = scontrini.count()
+    totale_speso = round(scontrini.aggregate(
+        Sum('totale'))['totale__sum'] or 0, 2)
+    numero_articoli = ListaProdotti.objects.filter(
+        scontrino__in=scontrini).aggregate(Sum('quantita'))['quantita__sum'] or 0
+
+    top_prodotti = list(ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+        total_ordinato=Sum('quantita')).order_by('-total_ordinato')[:5])
+
+    top_supermercati = list(scontrini.values('negozio__nome').annotate(
+        frequenza=Count('negozio')).order_by('-frequenza')[:3])
+
+    return JsonResponse({
+        'labels': labels,
+        'data': data,
+        'numero_scontrini': numero_scontrini,
+        'totale_speso': totale_speso,
+        'numero_articoli': numero_articoli,
+        'top_prodotti': top_prodotti,
+        'top_supermercati': top_supermercati,
+        'filtro_attuale': filtro
+    })

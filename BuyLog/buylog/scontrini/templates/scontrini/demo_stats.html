@@ -1,0 +1,102 @@
+<!-- templates/scontrini/demo_stats.html -->
+{% extends 'scontrini/base.html' %}
+{% load static %}
+
+{% block title %}Demo Statistiche{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Demo Statistiche</h1>
+        <span class="text-muted">Demo Utente</span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Statistiche: {{ filtro_attuale|default:"Globali" }}</h5>
+                    <p class="card-text">Numero di scontrini: <strong>{{ numero_scontrini }}</strong></p>
+                    <p class="card-text">Totale speso: <strong>{{ totale_speso|floatformat:2 }} €</strong></p>
+                    <p class="card-text">Numero di articoli ordinati: <strong>{{ numero_articoli }}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Grafico delle Spese</h5>
+                    <canvas id="speseGrafico"></canvas>
+                    {{ spese_giorno|json_script:"speseData" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <div class="btn-group" role="group" aria-label="Filtri">
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1mese">1 Mese</button>
+                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="all_time">All Time</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Top Prodotti</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Prodotto</th>
+                                <th>Quantità</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-prodotti">
+                            {% for prodotto in top_prodotti %}
+                            <tr>
+                                <td>{{ prodotto.prodotto__nome }}</td>
+                                <td>{{ prodotto.total_ordinato }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Top Supermercati</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Supermercato</th>
+                                <th>Visite</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-supermercati">
+                            {% for supermercato in top_supermercati %}
+                            <tr>
+                                <td>{{ supermercato.negozio__nome }}</td>
+                                <td>{{ supermercato.frequenza }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'scontrini/js/stats_demo.js' %}"></script>
+{% endblock %}

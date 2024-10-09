@@ -25,4 +25,10 @@ urlpatterns = [
          name='aggiorna_tabella_supermercati'),
     path('aggiorna_tabella_prodotti/', aggiorna_tabella_prodotti,
          name='aggiorna_tabella_prodotti'),
+
+
+    path('demo/', DemoStatsView.as_view(), name='demo'),
+    path('aggiorna_grafico_demo/', aggiorna_grafico_demo,
+         name='aggiorna_grafico_demo'),
+
 ]

@@ -1,7 +1,6 @@
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, UpdateView, DeleteView
+from django.views.generic import CreateView, DetailView, UpdateView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from .forms import *
@@ -13,11 +12,9 @@ from scontrini.models import Scontrino
 
 def home(request):
     if request.user.is_authenticated:
-        return redirect('scontrini')
+        return redirect('scontrini:dashboard')
     else:
-        ctx = {'title': 'HOMEPAGE'}
-        return render(request=request, template_name='home.html',
-                      context=ctx)
+        return render(request, 'demo_home.html')
 
 
 class UserCreateView(CreateView):
@@ -67,3 +64,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
             'user_form': user_form,
             'profile_form': profile_form
         })
+
+
+class DemoHomeView(TemplateView):
+    template_name = 'demo_home.html'
