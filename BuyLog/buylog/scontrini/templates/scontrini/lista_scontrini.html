@@ -17,7 +17,7 @@
             {% for scontrino in scontrini %}
             <tr>
                 <td>{{ scontrino.negozio.nome }}</td>
-                <td>{{ scontrino.data }}</td>
+                <td>{{ scontrino.data|date:"M d, Y" }}</td>
                 <td>
                     <a href="{% url 'scontrini:dettagli_scontrino' scontrino.id %}" class="btn btn-primary">Dettagli</a>
                 </td>
