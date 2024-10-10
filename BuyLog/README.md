@@ -38,10 +38,28 @@ currently WIP
     - possibilità di usare filtri 
 
 
-3. Gestione pagina di User profile per visualizzare dettagli utente e permettere modifica dei dati
+3. Gestione pagina di User profile per visualizzare dettagli utente e permettere modifica dei dati [check]
     - migrazione per introdurre modello Profile in 1-1 con User di Django
     - Possibilità di caricare immagini (in media/) 
     - Opzione per modificare i dati utente 
     - Opzione per cambiare foto profilo 
     - Cancellazione utenet (optional)
     - Abbellimento template e gestione urls
+
+
+
+4. bla bla 
+
+
+
+
+# TODO: 
+
+- Abbellire il FrontEnd 
+- Organizzare bene l'url routing 
+- Controlli sui dati inseriti dall'utente 
+- Cancellazione profilo utente
+- Aggiungere footer con url inerenti 
+- Aggiornare pagina successo caricamento scontrino
+- Possibilità di cancellare uno scontrino [check]
+- Aggiungere delimitatore ai dati visualizzati in tabelle

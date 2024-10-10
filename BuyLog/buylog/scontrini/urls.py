@@ -12,6 +12,8 @@ urlpatterns = [
     path('lista/', lista_scontrini, name='lista_scontrini'),
     path('dettagli/<int:scontrino_id>/',
          dettagli_scontrino, name='dettagli_scontrino'),
+    path('elimina_scontrino/<int:scontrino_id>',
+         elimina_scontrino, name='elimina_scontrino'),
     path('aggiungi_prodotto/', aggiungi_prodotto, name='aggiungi_prodotto'),
     #  stats:
     # path('statistiche/', DashboardView.as_view(), name='dashboard'),

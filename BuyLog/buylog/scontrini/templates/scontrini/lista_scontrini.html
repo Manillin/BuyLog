@@ -3,14 +3,27 @@
 {% block title %}Lista Scontrini{% endblock %}
 
 {% block content %}
+<div class="container mt-5">
     <h1>I tuoi Scontrini</h1>
-    <ul>
-        {% for scontrino in scontrini %}
-            <li>
-                <a href="{% url 'scontrini:dettagli_scontrino' scontrino.id %}">
-                    Acquisto in: {{ scontrino.negozio.nome }} del {{ scontrino.data }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Negozio</th>
+                <th>Data</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scontrino in scontrini %}
+            <tr>
+                <td>{{ scontrino.negozio.nome }}</td>
+                <td>{{ scontrino.data }}</td>
+                <td>
+                    <a href="{% url 'scontrini:dettagli_scontrino' scontrino.id %}" class="btn btn-primary">Dettagli</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

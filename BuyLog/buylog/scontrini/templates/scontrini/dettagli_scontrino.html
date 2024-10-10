@@ -3,13 +3,41 @@
 {% block title %}Dettagli Scontrino{% endblock %}
 
 {% block content %}
+<div class="container mt-5">
     <h1>Dettagli Scontrino</h1>
-    <p>Negozio: {{ scontrino.negozio.nome }}</p>
-    <p>Data: {{ scontrino.data }}</p>
+    <p><strong>Negozio:</strong> {{ scontrino.negozio.nome }}</p>
+    <p><strong>Data:</strong> {{ scontrino.data|date:"M d, Y" }}</p>
+    <p><strong>Totale:</strong> {{ scontrino.totale }} €</p>
     <h2>Prodotti</h2>
-    <ul>
+    <ul class="list-group">
         {% for prodotto in prodotti %}
-            <li>{{ prodotto.prodotto.nome }} - {{ prodotto.quantita }} x {{ prodotto.prezzo_unitario }} $</li>
+        <li class="list-group-item">{{ prodotto.prodotto.nome }} - {{ prodotto.quantita }} x {{ prodotto.prezzo_unitario }} $</li>
         {% endfor %}
     </ul>
+    <button class="btn btn-danger mt-3" data-toggle="modal" data-target="#deleteModal">Elimina scontrino</button>
+</div>
+
+<!-- Modale di Conferma -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Conferma Eliminazione</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Sei sicuro di voler cancellare questo scontrino?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                <form method="post" action="{% url 'scontrini:elimina_scontrino' scontrino.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Conferma</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
