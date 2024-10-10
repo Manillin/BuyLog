@@ -38,7 +38,7 @@ currently WIP
     - possibilità di usare filtri 
 
 
-3. Gestione pagina di User profile per visualizzare dettagli utente e permettere modifica dei dati [check]
+3. Gestione pagina di User e permettere modifica dei dati [check]
     - migrazione per introdurre modello Profile in 1-1 con User di Django
     - Possibilità di caricare immagini (in media/) 
     - Opzione per modificare i dati utente 
@@ -63,3 +63,4 @@ currently WIP
 - Aggiornare pagina successo caricamento scontrino
 - Possibilità di cancellare uno scontrino [check]
 - Aggiungere delimitatore ai dati visualizzati in tabelle
+- Aggiungere le alert con bootstrap alert 

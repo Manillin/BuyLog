@@ -1,11 +1,21 @@
 {% extends 'base.html' %}
 
-
 {% block title %}Scontrino salvato con successo{% endblock %}
 
 {% block content %}
-    <h1>I tuoi Scontrini</h1>
-    <p>Hai salvato il tuo scontrino con successo. Puoi visualizzare i tuoi scontrini o aggiungerne un altro.</p>
-    <a href="{% url 'scontrini:carica_scontrino' %}">Aggiungi un altro scontrino</a>
-
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">Scontrino salvato con successo!</h4>
+                <p>Hai salvato il tuo scontrino con successo. Puoi visualizzare i tuoi scontrini o aggiungerne un altro.</p>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'scontrini:carica_scontrino' %}" class="btn btn-primary">Aggiungi un altro scontrino</a>
+                    <a href="{% url 'scontrini:lista_scontrini' %}" class="btn btn-secondary">Visualizza i tuoi scontrini</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

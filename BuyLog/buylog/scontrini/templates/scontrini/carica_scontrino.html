@@ -55,6 +55,10 @@
             <div class="modal-body">
                 <form id="aggiungiProdottoForm">
                     <div class="form-group">
+                        <label for="nome_prodotto">Nome Prodotto</label>
+                        <input type="text" class="form-control" id="nome_prodotto" name="nome_prodotto" required>
+                    </div>
+                    <div class="form-group">
                         <label for="quantita">Quantità</label>
                         <input type="number" class="form-control" id="quantita" name="quantita" required>
                     </div>
@@ -62,9 +66,8 @@
                         <label for="prezzo_unitario">Prezzo Unitario</label>
                         <input type="number" step="0.01" class="form-control" id="prezzo_unitario" name="prezzo_unitario" required>
                     </div>
-                    <div class="form-group">
-                        <label for="nome_prodotto">Nome Prodotto</label>
-                        <input type="text" class="form-control" id="nome_prodotto" name="nome_prodotto" required>
+                    <div id="error-message" class="alert alert-danger d-none" role="alert">
+                        Quantità con cifre decimali non permesse, arrotondamento all'intero più vicino.
                     </div>
                     <button type="button" class="btn btn-primary" id="addProductButton">Aggiungi</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
