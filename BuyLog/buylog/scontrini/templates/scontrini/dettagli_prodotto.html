@@ -1,0 +1,52 @@
+<!-- dettagli_prodotto.html -->
+{% extends 'scontrini/base.html' %}
+
+{% block title %}Dettagli Prodotto{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h2>Dettagli Prodotto: {{ prodotto.nome }}</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Quantità ordinata</th>
+                        <td>{{ quantita_ordinata }}</td>
+                    </tr>
+                    <tr>
+                        <th>Costo totale</th>
+                        <td>{{ costo_totale|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Costo medio</th>
+                        <td>{{ costo_medio|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Acquistato in quanti diversi negozi</th>
+                        <td>{{ supermercati_diversi }}</td>
+                    </tr>
+                    <tr>
+                        <th>Prezzo più caro</th>
+                        <td>{{ prezzo_piu_caro|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Prezzo più economico</th>
+                        <td>{{ prezzo_piu_economico|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Prima volta acquistato</th>
+                        <td>{{ prima_volta_acquistato|date:"M d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Ultima volta acquistato</th>
+                        <td>{{ ultima_volta_acquistato|date:"M d, Y" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

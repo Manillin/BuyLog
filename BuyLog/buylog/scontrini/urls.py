@@ -33,4 +33,12 @@ urlpatterns = [
     path('aggiorna_grafico_demo/', aggiorna_grafico_demo,
          name='aggiorna_grafico_demo'),
 
+
+    # Ricerca e dattaglio prodotto
+    path('ricerca_prodotto/', RicercaProdottoView.as_view(),
+         name='ricerca_prodotto'),
+    path('prodotto/<int:pk>/', DettagliProdottoView.as_view(),
+         name='dettagli_prodotto'),
+
+
 ]

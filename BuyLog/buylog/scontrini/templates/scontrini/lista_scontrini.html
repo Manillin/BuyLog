@@ -1,10 +1,36 @@
+<!-- lista_scontrini.html -->
 {% extends 'scontrini/base.html' %}
 
 {% block title %}Lista Scontrini{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h1>I tuoi Scontrini</h1>
+    <center>
+        <h1>Lista Scontrini</h1>
+    </center>
+    <br>
+
+
+    <!-- Form di ricerca prodotto -->
+    <div class="d-flex justify-content-center mb-3">
+        <form method="GET" action="{% url 'scontrini:ricerca_prodotto' %}" class="form-inline">
+            <div class="form-group mr-2">
+                <label for="cerca_prodotto" class="mr-2">Cerca prodotto:</label>
+                <input type="text" id="cerca_prodotto" name="prodotto" class="form-control" placeholder="Nome prodotto">
+            </div>
+            <button type="submit" class="btn btn-primary">Cerca</button>
+        </form>
+    </div>
+
+    <!-- Messaggio di errore -->
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% endif %}
+
+    <br>
+
     <table class="table table-striped">
         <thead>
             <tr>

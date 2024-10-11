@@ -1,9 +1,10 @@
+from django.views.generic import DetailView
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
 from .models import Scontrino
 from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper, Max, Min
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, DetailView
 from django.contrib import messages  # Per gestire i messaggi di avviso
 from django.contrib import messages  # Per gestire messaggi di avviso
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
@@ -184,7 +185,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['user'] = user
 
         # Filtra in base al parametro di filtro (ad es. 'all time', '1 mese', '6 mesi', ecc.)
-        filtro = self.request.GET.get('filtro', 'all_time')
+        filtro = self.request.GET.get(
+            'filtro', '6mesi')  # cambio filtro default
         context['filtro_attuale'] = filtro
         # fetch scontrini fitrati
         scontrini = self.get_scontrini_filtrati(filtro, user)
@@ -437,7 +439,9 @@ class DemoStatsView(TemplateView):
             return context
 
         # Fetch dei dati aggregati
-        scontrini = Scontrino.objects.all()
+        filtro = '1mese'  # Filtro predefinito
+        start_date = now() - timedelta(days=30)
+        scontrini = Scontrino.objects.filter(data__gte=start_date)
         spese = scontrini.extra(select={'giorno': 'date(data)'}).values(
             'giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')
 
@@ -466,7 +470,7 @@ class DemoStatsView(TemplateView):
             'numero_articoli': numero_articoli,
             'top_prodotti': top_prodotti,
             'top_supermercati': top_supermercati,
-            'filtro_attuale': 'all_time',
+            'filtro_attuale': filtro,
             'spese_giorno': list(spese),  # Assicurati che sia una lista
             'numero_utenti_registrati': numero_utenti_registrati
 
@@ -481,7 +485,7 @@ class DemoStatsView(TemplateView):
             'numero_articoli': numero_articoli,
             'top_prodotti': top_prodotti,
             'top_supermercati': top_supermercati,
-            'filtro_attuale': 'all_time',
+            'filtro_attuale': filtro,
             'spese_giorno': list(spese),  # Assicurati che sia una lista
             'numero_utenti_registrati': numero_utenti_registrati
         }
@@ -496,7 +500,7 @@ class DemoStatsView(TemplateView):
 
 
 def aggiorna_grafico_demo(request):
-    filtro = request.GET.get('filtro', 'all_time')
+    filtro = request.GET.get('filtro', '1mese')
 
     if filtro == '1mese':
         scontrini = Scontrino.objects.filter(
@@ -532,3 +536,54 @@ def aggiorna_grafico_demo(request):
         'top_supermercati': top_supermercati,
         'filtro_attuale': filtro
     })
+
+
+# views.py
+class RicercaProdottoView(LoginRequiredMixin, TemplateView):
+    template_name = 'scontrini/lista_scontrini.html'
+
+    def get(self, request, *args, **kwargs):
+        prodotto_nome = request.GET.get('prodotto', '').strip()
+        if prodotto_nome:
+            try:
+                prodotto = Prodotto.objects.get(nome__iexact=prodotto_nome)
+                return redirect('scontrini:dettagli_prodotto', pk=prodotto.pk)
+            except Prodotto.DoesNotExist:
+                return render(request, self.template_name, {
+                    'scontrini': Scontrino.objects.filter(utente=request.user),
+                    'error_message': 'Prodotto inesistente, verifica di cercare un prodotto che hai acquistato'
+                })
+        return render(request, self.template_name, {
+            'scontrini': Scontrino.objects.filter(utente=request.user)
+        })
+
+
+class DettagliProdottoView(LoginRequiredMixin, DetailView):
+    model = Prodotto
+    template_name = 'scontrini/dettagli_prodotto.html'
+    context_object_name = 'prodotto'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        prodotto = self.get_object()
+        lista_prodotti = ListaProdotti.objects.filter(prodotto=prodotto)
+        scontrini = Scontrino.objects.filter(prodotti__prodotto=prodotto)
+
+        context['quantita_ordinata'] = lista_prodotti.aggregate(Sum('quantita'))[
+            'quantita__sum'] or 0
+        context['costo_totale'] = lista_prodotti.aggregate(Sum('prezzo_unitario'))[
+            'prezzo_unitario__sum'] or 0
+        context['costo_medio'] = context['costo_totale'] / \
+            context['quantita_ordinata'] if context['quantita_ordinata'] else 0
+        context['supermercati_diversi'] = scontrini.values(
+            'negozio').distinct().count()
+        context['prezzo_piu_caro'] = lista_prodotti.aggregate(
+            Max('prezzo_unitario'))['prezzo_unitario__max'] or 0
+        context['prezzo_piu_economico'] = lista_prodotti.aggregate(
+            Min('prezzo_unitario'))['prezzo_unitario__min'] or 0
+        context['prima_volta_acquistato'] = lista_prodotti.earliest(
+            'scontrino__data').scontrino.data if lista_prodotti.exists() else None
+        context['ultima_volta_acquistato'] = lista_prodotti.latest(
+            'scontrino__data').scontrino.data if lista_prodotti.exists() else None
+
+        return context

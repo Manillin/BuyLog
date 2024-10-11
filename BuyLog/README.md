@@ -58,9 +58,9 @@ currently WIP
 - Abbellire il FrontEnd 
 - Organizzare bene l'url routing 
 - Controlli sui dati inseriti dall'utente 
-- Cancellazione profilo utente
+- Cancellazione profilo utente 
 - Aggiungere footer con url inerenti 
-- Aggiornare pagina successo caricamento scontrino
+- Aggiornare pagina successo caricamento scontrino 
 - Possibilità di cancellare uno scontrino [check]
 - Aggiungere delimitatore ai dati visualizzati in tabelle
 - Aggiungere le alert con bootstrap alert 
