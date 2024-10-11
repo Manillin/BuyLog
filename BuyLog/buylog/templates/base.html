@@ -26,7 +26,11 @@
                         <a class="nav-link" href="{% url 'scontrini:carica_scontrino' %}">Carica</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'scontrini:lista_scontrini' %}">Lista Scontrini</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'user' %}">Profilo</a>
+
                     </li>
                 </ul>
             </div>
@@ -40,5 +44,10 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     {% block extra_js %}{% endblock %}
+
+
+    <!-- Footer comune -->
+    {% block footer %}
+    {% endblock %}
 </body>
 </html>
