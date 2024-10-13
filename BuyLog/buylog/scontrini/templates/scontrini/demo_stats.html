@@ -1,41 +1,63 @@
-<!-- templates/scontrini/demo_stats.html -->
 {% extends 'scontrini/base.html' %}
 {% load static %}
 
 {% block title %}Demo Statistiche{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Demo Statistiche</h1>
-        <span class="text-muted">Demo Utente - Utenti registrati: {{ numero_utenti_registrati }}</span>
-    </div>
-
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Statistiche: {{ filtro_attuale|default:"Globali" }}</h5>
-                    <p class="card-text">Numero di scontrini: <strong>{{ numero_scontrini }}</strong></p>
-                    <p class="card-text">Totale speso: <strong>{{ totale_speso|floatformat:2 }} €</strong></p>
-                    <p class="card-text">Numero di articoli ordinati: <strong>{{ numero_articoli }}</strong></p>
+<div class="container-fluid py-5 bg-light">
+    <!-- Titolo principale con sfondo a gradiente -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="bg-gradient-primary text-white p-4 rounded shadow">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="display-4 mb-0">Demo Statistiche</h1>
+                    <span class="h5">Demo Utente - Utenti registrati: {{ numero_utenti_registrati }}</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="col-md-8">
-            <div class="card shadow-sm">
+    <!-- Sezione Statistiche (centrata e sopra il grafico) -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">Grafico delle Spese</h5>
-                    <canvas id="speseGrafico"></canvas>
+                    <h5 class="card-title text-primary text-center">Statistiche: {{ filtro_attuale|default:"Globali" }}</h5>
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <h6 class="text-muted">Numero di scontrini</h6>
+                            <h3 class="font-weight-bold">{{ numero_scontrini }}</h3>
+                        </div>
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <h6 class="text-muted">Totale speso</h6>
+                            <h3 class="font-weight-bold">{{ totale_speso|floatformat:2 }} €</h3>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h6 class="text-muted">Articoli ordinati</h6>
+                            <h3 class="font-weight-bold">{{ numero_articoli }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafico delle Spese -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Grafico delle Spese</h5>
+                    <canvas id="speseGrafico" class="mt-4"></canvas>
                     {{ spese_giorno|json_script:"speseData" }}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-12 text-center">
+    <!-- Filtri con pulsanti moderni (centrati) -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-10 text-center">
             <div class="btn-group" role="group" aria-label="Filtri">
                 <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1mese">1 Mese</button>
                 <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="all_time">All Time</button>
@@ -43,51 +65,58 @@
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
+    <!-- Sezione Top Prodotti e Supermercati -->
+    <div class="row">
+        <!-- Top Prodotti -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Top Prodotti</h5>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Prodotto</th>
-                                <th>Quantità</th>
-                            </tr>
-                        </thead>
-                        <tbody id="top-prodotti">
-                            {% for prodotto in top_prodotti %}
-                            <tr>
-                                <td>{{ prodotto.prodotto__nome }}</td>
-                                <td>{{ prodotto.total_ordinato }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <h5 class="card-title text-primary">Top Prodotti</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Prodotto</th>
+                                    <th>Quantità</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-prodotti">
+                                {% for prodotto in top_prodotti %}
+                                <tr>
+                                    <td>{{ prodotto.prodotto__nome }}</td>
+                                    <td>{{ prodotto.total_ordinato }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card shadow-sm">
+        <!-- Top Supermercati -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Top Supermercati</h5>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Supermercato</th>
-                                <th>Visite</th>
-                            </tr>
-                        </thead>
-                        <tbody id="top-supermercati">
-                            {% for supermercato in top_supermercati %}
-                            <tr>
-                                <td>{{ supermercato.negozio__nome }}</td>
-                                <td>{{ supermercato.frequenza }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <h5 class="card-title text-primary">Top Supermercati</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Supermercato</th>
+                                    <th>Visite</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-supermercati">
+                                {% for supermercato in top_supermercati %}
+                                <tr>
+                                    <td>{{ supermercato.negozio__nome }}</td>
+                                    <td>{{ supermercato.frequenza }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
