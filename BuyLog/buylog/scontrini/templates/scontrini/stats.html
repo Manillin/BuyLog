@@ -14,111 +14,134 @@
         <span class="text-muted">Utente: {{ user }}</span>
     </div>
 
-    <!-- Sezione Statistiche -->
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Statistiche: {{ filtro_attuale|default:"Globali" }}</h5>
-                    <p class="card-text">Numero di scontrini: <strong>{{ numero_scontrini }}</strong></p>
-                    <p class="card-text">Totale speso: <strong>{{ totale_speso|floatformat:2 }} €</strong></p>
-                    <p class="card-text">Numero di articoli ordinati: <strong>{{ numero_articoli }}</strong></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Grafico delle Spese -->
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Grafico delle Spese</h5>
-                    <canvas id="speseGrafico"></canvas>
-                    {{ spese_giorno|json_script:"speseData" }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filtri con pulsanti moderni -->
-    <div class="row mt-4">
-        <div class="col-md-12 text-center">
-            <div class="btn-group" role="group" aria-label="Filtri">
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1mese">1 Mese</button>
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="6mesi">6 Mesi</button>
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1anno">1 Anno</button>
-                <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="all_time">All Time</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sezione Top Prodotti e Supermercati -->
-    <div class="row mt-4">
-        <!-- Top Prodotti -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Top Prodotti</h5>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Prodotto</th>
-                                <th>Quantità</th>
-                            </tr>
-                        </thead>
-                        <tbody id="top-prodotti">
-                            {% for prodotto in top_prodotti %}
-                            <tr>
-                                <td>{{ prodotto.prodotto__nome }}</td>
-                                <td>{{ prodotto.total_ordinato }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'scontrini:tutti_prodotti' %}" class="btn btn-primary">Tutti i Prodotti</a>
+        <!-- Sezione Statistiche (centrata) -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Statistiche: {{ filtro_attuale|default:"Globali" }}</h5>
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3 mb-md-0 d-flex flex-column justify-content-between">
+                                <h6 class="text-muted">Numero di scontrini</h6>
+                                <div class="mt-2">
+                                    <h3 class="font-weight-bold mb-0">{{ numero_scontrini }}</h3>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center mb-3 mb-md-0 d-flex flex-column justify-content-between">
+                                <h6 class="text-muted">Totale speso</h6>
+                                <div class="mt-2">
+                                    <h3 class="font-weight-bold mb-0">{{ totale_speso|floatformat:2 }} €</h3>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center d-flex flex-column justify-content-between">
+                                <h6 class="text-muted">Articoli ordinati</h6>
+                                <div class="mt-2">
+                                    <h3 class="font-weight-bold mb-0">{{ numero_articoli }}</h3>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Top Supermercati -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Top Supermercati</h5>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Supermercato</th>
-                                <th>Visite</th>
-                            </tr>
-                        </thead>
-                        <tbody id="top-supermercati">
-                            {% for supermercato in top_supermercati %}
-                            <tr>
-                                <td>{{ supermercato.negozio__nome }}</td>
-                                <td>{{ supermercato.frequenza }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'scontrini:tutti_supermercati' %}" class="btn btn-primary">Tutti i Supermercati</a>
+    
+        <!-- Grafico delle Spese (centrato) -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-10">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Grafico delle Spese</h5>
+                        <canvas id="speseGrafico" class="mt-4"></canvas>
+                        {{ spese_giorno|json_script:"speseData" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Filtri con pulsanti moderni (centrati) -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-10 text-center">
+                <div class="btn-group" role="group" aria-label="Filtri">
+                    <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1mese">1 Mese</button>
+                    <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="6mesi">6 Mesi</button>
+                    <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="1anno">1 Anno</button>
+                    <button type="button" class="btn btn-outline-primary filtro-btn" data-filtro="all_time">All Time</button>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Sezione Top Prodotti e Supermercati -->
+        <div class="row">
+            <!-- Top Prodotti -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Top Prodotti</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Prodotto</th>
+                                        <th>Quantità</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-prodotti">
+                                    {% for prodotto in top_prodotti %}
+                                    <tr>
+                                        <td>{{ prodotto.prodotto__nome }}</td>
+                                        <td>{{ prodotto.total_ordinato }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'scontrini:tutti_prodotti' %}" class="btn btn-primary">Tutti i Prodotti</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Top Supermercati -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Top Supermercati</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Supermercato</th>
+                                        <th>Visite</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-supermercati">
+                                    {% for supermercato in top_supermercati %}
+                                    <tr>
+                                        <td>{{ supermercato.negozio__nome }}</td>
+                                        <td>{{ supermercato.frequenza }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'scontrini:tutti_supermercati' %}" class="btn btn-primary">Tutti i Supermercati</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Inclusione di Chart.js e Luxon -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
-<!-- Aggiungi jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Collegamento allo script per gestire i grafici -->
-<script src="{% static 'scontrini/js/stats.js' %}"></script>
-
-{% endblock %}
-
+    
+    <!-- Inclusione di Chart.js e Luxon -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+    <!-- Aggiungi jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Collegamento allo script per gestire i grafici -->
+    <script src="{% static 'scontrini/js/stats.js' %}"></script>
+    
+    {% endblock %}
