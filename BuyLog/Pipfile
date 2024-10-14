@@ -9,6 +9,7 @@ django-crispy-forms = "*"
 crispy-bootstrap4 = "*"
 pipdeptree = "*"
 django-braces = "*"
+django-redis = "*"
 
 [dev-packages]
 

@@ -422,12 +422,9 @@ def aggiorna_tabella_supermercati(request):
 
 
 # Visualizzazione pagina DEMO:
+
 class DemoStatsView(TemplateView):
     template_name = 'scontrini/demo_stats.html'
-
-    @method_decorator(cache_page(60 * 15))  # Cache per 15 minuti
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -473,7 +470,6 @@ class DemoStatsView(TemplateView):
             'filtro_attuale': filtro,
             'spese_giorno': list(spese),  # Assicurati che sia una lista
             'numero_utenti_registrati': numero_utenti_registrati
-
         })
 
         # Crea una copia del contesto con solo i dati SERIALIZZABILI
@@ -495,7 +491,6 @@ class DemoStatsView(TemplateView):
                   60 * 15)  # Cache per 15 minuti
 
         return context
-
 # Aggiornamento grafico demo
 
 
@@ -538,7 +533,6 @@ def aggiorna_grafico_demo(request):
     })
 
 
-# views.py
 class RicercaProdottoView(LoginRequiredMixin, TemplateView):
     template_name = 'scontrini/lista_scontrini.html'
 
