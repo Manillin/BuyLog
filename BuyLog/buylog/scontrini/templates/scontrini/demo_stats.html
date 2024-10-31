@@ -5,36 +5,32 @@
 
 {% block content %}
 <div class="container-fluid py-5 bg-light">
-    <!-- Titolo principale con sfondo a gradiente -->
+    <!-- Titolo principale semplificato -->
     <div class="row mb-5">
-        <div class="col-12">
-            <div class="bg-gradient-primary text-white p-4 rounded shadow">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h1 class="display-4 mb-0">Demo Statistiche</h1>
-                    <span class="h5">Demo Utente - Utenti registrati: {{ numero_utenti_registrati }}</span>
-                </div>
-            </div>
+        <div class="col-12 text-center">
+            <h1 class="display-4 text-primary mb-0">Demo Statistiche</h1>
+            <p class="text-muted mt-2">Demo Utente - Utenti registrati: {{ numero_utenti_registrati }}</p>
         </div>
     </div>
 
-    <!-- Sezione Statistiche (centrata e sopra il grafico) -->
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-6">
+    <!-- Sezione Statistiche -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title text-primary text-center">Statistiche: {{ filtro_attuale|default:"Globali" }}</h5>
+                    <h5 class="card-title text-primary text-center">Statistiche: <span id="filtro-attuale">{{ filtro_attuale|default:"Globali" }}</span></h5>
                     <div class="row">
                         <div class="col-md-4 text-center mb-3 mb-md-0">
                             <h6 class="text-muted">Numero di scontrini</h6>
-                            <h3 class="font-weight-bold">{{ numero_scontrini }}</h3>
+                            <h4 class="font-weight-bold" id="numero-scontrini">{{ numero_scontrini }}</h4>
                         </div>
                         <div class="col-md-4 text-center mb-3 mb-md-0">
                             <h6 class="text-muted">Totale speso</h6>
-                            <h3 class="font-weight-bold">{{ totale_speso|floatformat:2 }} €</h3>
+                            <h4 class="font-weight-bold" id="totale-speso">{{ totale_speso|floatformat:2 }} €</h4>
                         </div>
                         <div class="col-md-4 text-center">
                             <h6 class="text-muted">Articoli ordinati</h6>
-                            <h3 class="font-weight-bold">{{ numero_articoli }}</h3>
+                            <h4 class="font-weight-bold" id="numero-articoli">{{ numero_articoli }}</h4>
                         </div>
                     </div>
                 </div>
@@ -43,12 +39,12 @@
     </div>
 
     <!-- Grafico delle Spese -->
-    <div class="row mb-5">
-        <div class="col-md-12">
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title text-primary">Grafico delle Spese</h5>
-                    <canvas id="speseGrafico" class="mt-4"></canvas>
+                    <canvas id="speseGrafico" class="mt-3"></canvas>
                     {{ spese_giorno|json_script:"speseData" }}
                 </div>
             </div>
