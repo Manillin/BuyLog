@@ -175,10 +175,13 @@ def elimina_scontrino(request, scontrino_id):
     scontrino.delete()
     return redirect('scontrini:lista_scontrini')
 
+# funzione per la visualizzazione delle statistiche in stile dashbaord
+
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'scontrini/stats.html'
 
+    # ottiene il contesto -> statistiche dell'utente che sta visualizzando le statistiche
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -563,12 +566,20 @@ class DettagliProdottoView(LoginRequiredMixin, DetailView):
         lista_prodotti = ListaProdotti.objects.filter(prodotto=prodotto)
         scontrini = Scontrino.objects.filter(prodotti__prodotto=prodotto)
 
-        context['quantita_ordinata'] = lista_prodotti.aggregate(Sum('quantita'))[
-            'quantita__sum'] or 0
-        context['costo_totale'] = lista_prodotti.aggregate(Sum('prezzo_unitario'))[
-            'prezzo_unitario__sum'] or 0
-        context['costo_medio'] = context['costo_totale'] / \
-            context['quantita_ordinata'] if context['quantita_ordinata'] else 0
+        # Calcolo quantità totale ordinata
+        context['quantita_ordinata'] = lista_prodotti.aggregate(
+            Sum('quantita'))['quantita__sum'] or 0
+
+        # Calcolo costo totale (prezzo_unitario * quantità per ogni riga)
+        costo_totale = lista_prodotti.aggregate(
+            totale=Sum(F('prezzo_unitario') * F('quantita')))['totale'] or 0
+        context['costo_totale'] = costo_totale
+
+        # Calcolo costo medio (costo totale / quantità totale)
+        context['costo_medio'] = round(float(
+            costo_totale) / context['quantita_ordinata'], 2) if context['quantita_ordinata'] else 0
+
+        # Altri calcoli
         context['supermercati_diversi'] = scontrini.values(
             'negozio').distinct().count()
         context['prezzo_piu_caro'] = lista_prodotti.aggregate(
