@@ -52,25 +52,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Funzione per aggiornare il grafico e le statistiche tramite AJAX
     function aggiornaGrafico(filtro) {
-        console.log("Chiamata AJAX per aggiornare il grafico con filtro:", filtro); // Log di debug
+        console.log("Chiamata AJAX per aggiornare il grafico con filtro:", filtro);
         $.ajax({
             url: '/scontrini/aggiorna_grafico_demo/',
             data: {
                 'filtro': filtro
             },
             success: function (data) {
-                console.log("Dati ricevuti dall'endpoint aggiorna_grafico_demo:", data); // Log di debug
+                console.log("Dati ricevuti dall'endpoint aggiorna_grafico_demo:", data);
 
                 // Aggiorna il grafico
                 speseGrafico.data.labels = data.labels;
                 speseGrafico.data.datasets[0].data = data.data;
                 speseGrafico.update();
 
-                // Aggiorna le statistiche
-                document.querySelector('.card-title').textContent = `Statistiche: ${data.filtro_attuale}`;
-                document.querySelector('.card-text:nth-of-type(1) strong').textContent = data.numero_scontrini;
-                document.querySelector('.card-text:nth-of-type(2) strong').textContent = `${parseFloat(data.totale_speso).toFixed(2)} €`;
-                document.querySelector('.card-text:nth-of-type(3) strong').textContent = data.numero_articoli;
+                // Aggiorna le statistiche usando gli ID corretti
+                document.getElementById('filtro-attuale').textContent = data.filtro_attuale;
+                document.getElementById('numero-scontrini').textContent = data.numero_scontrini;
+                document.getElementById('totale-speso').textContent = `${parseFloat(data.totale_speso).toFixed(2)} €`;
+                document.getElementById('numero-articoli').textContent = data.numero_articoli;
 
                 // Aggiorna i top prodotti
                 var topProdottiTable = document.getElementById('top-prodotti');
