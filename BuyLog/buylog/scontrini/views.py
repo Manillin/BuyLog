@@ -22,6 +22,8 @@ from django.utils.timezone import now, timedelta
 from django.template.loader import render_to_string
 from django.utils.text import slugify  # pulire nome negozio rimuovendo spazi
 from django.db.models import Q  # ricerche case insensitive
+from .cache_monitor import CacheMonitor
+
 
 # Create your views here.
 
@@ -434,6 +436,7 @@ class DemoStatsView(TemplateView):
 
         # Verifica se i dati sono già in cache
         cached_data = cache.get('demo_stats_data')
+        CacheMonitor.log_cache_status('demo_stats_data')
         if cached_data:
             context.update(cached_data)
             return context
@@ -486,7 +489,8 @@ class DemoStatsView(TemplateView):
             'top_supermercati': top_supermercati,
             'filtro_attuale': filtro,
             'spese_giorno': list(spese),  # Assicurati che sia una lista
-            'numero_utenti_registrati': numero_utenti_registrati
+            'numero_utenti_registrati': numero_utenti_registrati,
+            'cache_timestamp': now()
         }
 
         # Memorizza i dati in cache
