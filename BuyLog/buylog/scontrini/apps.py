@@ -8,3 +8,5 @@ class ScontriniConfig(AppConfig):
     # caricamento segnale
     def ready(self):
         import scontrini.signals
+        from .cache_monitor import CacheMonitor
+        CacheMonitor.start_monitoring(interval=300)
