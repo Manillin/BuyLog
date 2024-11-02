@@ -14,7 +14,7 @@ def home(request):
     if request.user.is_authenticated:
         return redirect('scontrini:dashboard')
     else:
-        return render(request, 'demo_home.html')
+        return render(request, 'landing_page.html')
 
 
 class UserCreateView(CreateView):

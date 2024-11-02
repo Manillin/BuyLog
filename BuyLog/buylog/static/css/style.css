@@ -1,0 +1,30 @@
+/* Layout principale */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Footer styling */
+.footer {
+    margin-top: auto;
+}
+
+/* Social icons hover effects */
+.social-icons a {
+    transition: opacity 0.3s;
+}
+
+.social-icons a:hover {
+    opacity: 0.8;
+}
+
+/* Footer links hover effect */
+.footer a.text-muted {
+    transition: color 0.3s;
+}
+
+.footer a.text-muted:hover {
+    color: #fff !important;
+    text-decoration: none;
+}

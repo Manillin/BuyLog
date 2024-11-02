@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}BuyLog - Traccia le tue spese{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="container-fluid py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Traccia le tue spese quotidiane in modo intelligente</h1>
+                <p class="lead mb-4">Carica i tuoi scontrini, analizza le tue abitudini di spesa e risparmia in modo consapevole.</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg">Inizia Gratis</a>
+                    <a href="{% url 'scontrini:demo' %}" class="btn btn-outline-light btn-lg">Prova la Demo</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <img src="{% static 'images/hero-image.png' %}" alt="Dashboard Preview" class="img-fluid rounded shadow-lg">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5">
+    <h2 class="text-center mb-5">Come funziona</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-receipt fs-1 text-primary mb-3"></i>
+                    <h3 class="h5">Carica i tuoi scontrini</h3>
+                    <p class="text-muted">Fotografa o carica i tuoi scontrini della spesa. Il sistema elaborerà automaticamente i dati.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up fs-1 text-primary mb-3"></i>
+                    <h3 class="h5">Analizza le tue spese</h3>
+                    <p class="text-muted">Visualizza statistiche dettagliate sui tuoi acquisti, prodotti più comprati e supermercati preferiti.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-piggy-bank fs-1 text-primary mb-3"></i>
+                    <h3 class="h5">Risparmia</h3>
+                    <p class="text-muted">Identifica le tue abitudini di spesa e trova opportunità di risparmio basate sui dati reali.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Demo Preview Section -->
+<div class="container-fluid py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Prova le nostre statistiche</h2>
+            <p class="lead text-muted">Dai un'occhiata alle potenti funzionalità di analisi</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card border-0 shadow">
+                    <div class="card-body p-0">
+                        <img src="{% static 'images/demo-preview.png' %}" alt="Demo Statistics" class="img-fluid rounded">
+                        <div class="text-center p-4">
+                            <a href="{% url 'scontrini:demo' %}" class="btn btn-primary btn-lg">Accedi alla Demo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h2 class="mb-4">Pronto a iniziare?</h2>
+            <p class="lead mb-4">Unisciti a migliaia di utenti che già utilizzano BuyLog per gestire le proprie spese</p>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5">Registrati Gratuitamente</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
