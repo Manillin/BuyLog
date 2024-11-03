@@ -23,6 +23,7 @@ from django.template.loader import render_to_string
 from django.utils.text import slugify  # pulire nome negozio rimuovendo spazi
 from django.db.models import Q  # ricerche case insensitive
 from .cache_monitor import CacheMonitor
+from django.core.paginator import Paginator
 
 
 # Create your views here.
@@ -300,27 +301,40 @@ def aggiorna_grafico(request):
 
 class TuttiProdottiView(LoginRequiredMixin, TemplateView):
     template_name = 'scontrini/tutti_prodotti.html'
+    prodotti_per_pagina = 15
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         filtro = self.request.GET.get('filtro', 'all_time')
         ordine = self.request.GET.get('ordine', '-quantita_ordinata')
+        page = self.request.GET.get('page', 1)
+
         context['filtro_attuale'] = filtro
         context['ordine_attuale'] = ordine
+
         prodotti = self.get_prodotti_filtrati(filtro, ordine, user)
-        context['prodotti'] = prodotti
+
+        # Creiamo il paginatore
+        paginator = Paginator(list(prodotti), self.prodotti_per_pagina)
+        prodotti_paginati = paginator.get_page(page)
+
+        context['prodotti'] = prodotti_paginati
         return context
 
     def get_prodotti_filtrati(self, filtro, ordine, user):
         scontrini = self.get_scontrini_filtrati(filtro, user)
-        prodotti = ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+        prodotti = ListaProdotti.objects.filter(scontrino__in=scontrini).values(
+            'prodotto__nome',
+            'prodotto__id'  # Aggiungiamo l'ID del prodotto
+        ).annotate(
             quantita_ordinata=Sum('quantita'),
             totale_speso=Sum(ExpressionWrapper(
                 F('prezzo_unitario') * F('quantita'), output_field=FloatField())),
             numero_supermercati=Count('scontrino__negozio', distinct=True),
             prezzo_medio=ExpressionWrapper(Sum(
-                F('prezzo_unitario') * F('quantita')) / Sum('quantita'), output_field=FloatField())
+                F('prezzo_unitario') * F('quantita')) / Sum('quantita'),
+                output_field=FloatField())
         ).order_by(ordine)
         return prodotti
 
@@ -338,8 +352,11 @@ class TuttiProdottiView(LoginRequiredMixin, TemplateView):
 def aggiorna_tabella_prodotti(request):
     filtro = request.GET.get('filtro', 'all_time')
     ordine = request.GET.get('ordine', '-quantita_ordinata')
+    page = request.GET.get('page', 1)
+    search = request.GET.get('search', '')
     user = request.user
 
+    # Ottieni gli scontrini filtrati
     if filtro == '1mese':
         scontrini = Scontrino.objects.filter(
             data__gte=now()-timedelta(days=30), utente=user)
@@ -352,18 +369,50 @@ def aggiorna_tabella_prodotti(request):
     else:
         scontrini = Scontrino.objects.filter(utente=user)
 
-    prodotti = ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
+    # Query base per i prodotti
+    prodotti = ListaProdotti.objects.filter(scontrino__in=scontrini)
+
+    # Applica la ricerca se presente
+    if search:
+        prodotti = prodotti.filter(prodotto__nome__icontains=search)
+
+    # Aggregazione e annotazione
+    prodotti = prodotti.values(
+        'prodotto__nome',
+        'prodotto__id'
+    ).annotate(
         quantita_ordinata=Sum('quantita'),
-        totale_speso=Sum(ExpressionWrapper(F('prezzo_unitario')
-                         * F('quantita'), output_field=FloatField())),
+        totale_speso=Sum(ExpressionWrapper(
+            F('prezzo_unitario') * F('quantita'), output_field=FloatField())),
         numero_supermercati=Count('scontrino__negozio', distinct=True),
         prezzo_medio=ExpressionWrapper(Sum(
-            F('prezzo_unitario') * F('quantita')) / Sum('quantita'), output_field=FloatField())
+            F('prezzo_unitario') * F('quantita')) / Sum('quantita'),
+            output_field=FloatField())
     ).order_by(ordine)
 
+    # Paginazione
+    paginator = Paginator(list(prodotti), 15)
+    prodotti_paginati = paginator.get_page(page)
+
+    # Renderizza sia la lista che la paginazione
     html = render_to_string(
-        'scontrini/partials/prodotti_list.html', {'prodotti': prodotti})
-    return JsonResponse({'html': html})
+        'scontrini/partials/prodotti_list.html',
+        {'prodotti': prodotti_paginati}
+    )
+
+    pagination_html = render_to_string(
+        'scontrini/partials/pagination.html',
+        {
+            'prodotti': prodotti_paginati,
+            'filtro_attuale': filtro,
+            'ordine_attuale': ordine
+        }
+    )
+
+    return JsonResponse({
+        'html': html,
+        'pagination': pagination_html
+    })
 
 
 class TuttiSupermercatiView(LoginRequiredMixin, TemplateView):
