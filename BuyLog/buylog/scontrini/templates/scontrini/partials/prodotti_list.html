@@ -1,6 +1,10 @@
 {% for prodotto in prodotti %}
 <tr>
-    <td>{{ prodotto.prodotto__nome }}</td>
+    <td>
+        <a href="{% url 'scontrini:dettagli_prodotto' pk=prodotto.prodotto__id %}" class="text-primary text-decoration-none">
+            {{ prodotto.prodotto__nome }}
+        </a>
+    </td>
     <td>{{ prodotto.quantita_ordinata }}</td>
     <td>{{ prodotto.totale_speso|floatformat:2 }} €</td>
     <td>{{ prodotto.numero_supermercati }}</td>

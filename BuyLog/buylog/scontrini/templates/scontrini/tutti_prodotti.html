@@ -37,6 +37,45 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Paginazione -->
+    <div class="d-flex justify-content-center mt-4">
+        {% if prodotti.paginator.num_pages > 1 %}
+        <nav aria-label="Navigazione pagine">
+            <ul class="pagination">
+                {% if prodotti.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">&laquo; Prima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ prodotti.previous_page_number }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Precedente</a>
+                    </li>
+                {% endif %}
+
+                {% for num in prodotti.paginator.page_range %}
+                    {% if prodotti.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > prodotti.number|add:'-3' and num < prodotti.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if prodotti.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ prodotti.next_page_number }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Successiva</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ prodotti.paginator.num_pages }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Ultima &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
