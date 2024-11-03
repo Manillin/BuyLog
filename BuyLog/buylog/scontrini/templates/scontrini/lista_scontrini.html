@@ -10,7 +10,6 @@
     </center>
     <br>
 
-
     <!-- Form di ricerca prodotto -->
     <div class="d-flex justify-content-center mb-3">
         <form method="GET" action="{% url 'scontrini:ricerca_prodotto' %}" class="form-inline">
@@ -28,8 +27,6 @@
             {{ error_message }}
         </div>
     {% endif %}
-
-    <br>
 
     <table class="table table-striped">
         <thead>
@@ -51,5 +48,42 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Paginazione -->
+    {% if scontrini.paginator.num_pages > 1 %}
+    <nav aria-label="Navigazione pagine">
+        <ul class="pagination justify-content-center">
+            {% if scontrini.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">&laquo; Prima</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ scontrini.previous_page_number }}">Precedente</a>
+                </li>
+            {% endif %}
+
+            {% for num in scontrini.paginator.page_range %}
+                {% if scontrini.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > scontrini.number|add:'-3' and num < scontrini.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if scontrini.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ scontrini.next_page_number }}">Successiva</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ scontrini.paginator.num_pages }}">Ultima &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

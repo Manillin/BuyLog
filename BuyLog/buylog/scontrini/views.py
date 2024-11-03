@@ -159,8 +159,19 @@ def successo(request):
 
 @login_required
 def lista_scontrini(request):
+    page = request.GET.get('page', 1)
     scontrini = Scontrino.objects.filter(utente=request.user).order_by('-data')
-    return render(request, 'scontrini/lista_scontrini.html', {'scontrini': scontrini})
+
+    # Crea il paginatore
+    paginator = Paginator(scontrini, 10)  # 15 scontrini per pagina
+    try:
+        scontrini_paginati = paginator.page(page)
+    except:
+        scontrini_paginati = paginator.page(1)
+
+    return render(request, 'scontrini/lista_scontrini.html', {
+        'scontrini': scontrini_paginati
+    })
 
 
 @login_required
@@ -594,17 +605,30 @@ class RicercaProdottoView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         prodotto_nome = request.GET.get('prodotto', '').strip()
+        page = request.GET.get('page', 1)
+
+        # Ottieni tutti gli scontrini dell'utente
+        scontrini = Scontrino.objects.filter(
+            utente=request.user).order_by('-data')
+
+        # Crea il paginatore
+        paginator = Paginator(scontrini, 15)  # 15 scontrini per pagina
+        try:
+            scontrini_paginati = paginator.page(page)
+        except:
+            scontrini_paginati = paginator.page(1)
+
         if prodotto_nome:
             try:
                 prodotto = Prodotto.objects.get(nome__iexact=prodotto_nome)
                 return redirect('scontrini:dettagli_prodotto', pk=prodotto.pk)
             except Prodotto.DoesNotExist:
                 return render(request, self.template_name, {
-                    'scontrini': Scontrino.objects.filter(utente=request.user),
+                    'scontrini': scontrini_paginati,
                     'error_message': 'Prodotto inesistente, verifica di cercare un prodotto che hai acquistato'
                 })
         return render(request, self.template_name, {
-            'scontrini': Scontrino.objects.filter(utente=request.user)
+            'scontrini': scontrini_paginati
         })
 
 
