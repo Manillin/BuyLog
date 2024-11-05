@@ -18,6 +18,22 @@ class CreaUtenteCliente(UserCreationForm):
         fields = ('username', 'first_name', 'last_name',
                   'email', 'password1', 'password2')
 
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+        if not any(char.isupper() for char in password1):
+            raise forms.ValidationError(
+                'La password deve contenere almeno una lettera maiuscola.')
+        if not any(char.isdigit() for char in password1):
+            raise forms.ValidationError(
+                'La password deve contenere almeno un numero.')
+        if not any(char.isalpha() for char in password1):
+            raise forms.ValidationError(
+                'La password deve contenere almeno una lettera.')
+        if len(password1) < 8:
+            raise forms.ValidationError(
+                'La password deve essere lunga almeno 8 caratteri.')
+        return password1
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.first_name = self.cleaned_data['first_name']
