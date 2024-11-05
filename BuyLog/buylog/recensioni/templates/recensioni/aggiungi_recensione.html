@@ -1,0 +1,83 @@
+{% extends 'recensioni/base_recensioni.html' %}
+{% load static %}
+
+{% block recensioni_content %}
+<div class="container mt-5">
+    {% if existing_review %}
+    <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading">Attenzione!</h4>
+        <p>Hai già scritto una recensione per questo negozio. Se procedi, la tua recensione precedente verrà sostituita con quella nuova.</p>
+    </div>
+    {% endif %}
+
+    <h2 class="text-center mb-4">Scrivi una recensione per {{ negozio.nome }}</h2>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form method="post" id="recensioneForm">
+                {% csrf_token %}
+                {% if existing_review %}
+                <input type="hidden" name="update_existing" value="true">
+                {% endif %}
+                
+                <div class="rating-section mb-4">
+                    <h5>Qualità/Prezzo</h5>
+                    <div class="stars" data-rating="qualita_prezzo" data-initial-value="{{ initial_qualita_prezzo|default:0 }}">
+                        {% for i in "12345" %}
+                        <i class="far fa-star" data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="qualita_prezzo" id="qualita_prezzo" required>
+                </div>
+
+                <div class="rating-section mb-4">
+                    <h5>Pulizia</h5>
+                    <div class="stars" data-rating="pulizia" data-initial-value="{{ initial_pulizia|default:0 }}">
+                        {% for i in "12345" %}
+                        <i class="far fa-star" data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="pulizia" id="pulizia" required>
+                </div>
+
+                <div class="rating-section mb-4">
+                    <h5>Servizio</h5>
+                    <div class="stars" data-rating="servizio" data-initial-value="{{ initial_servizio|default:0 }}">
+                        {% for i in "12345" %}
+                        <i class="far fa-star" data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="servizio" id="servizio" required>
+                </div>
+
+                <div class="rating-section mb-4">
+                    <h5>Varietà</h5>
+                    <div class="stars" data-rating="varieta" data-initial-value="{{ initial_varieta|default:0 }}">
+                        {% for i in "12345" %}
+                        <i class="far fa-star" data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="varieta" id="varieta" required>
+                </div>
+
+                <div class="rating-section mb-4">
+                    <h5>Voto Generale</h5>
+                    <div class="stars" data-rating="voto_generale" data-initial-value="{{ initial_voto_generale|default:0 }}">
+                        {% for i in "12345" %}
+                        <i class="far fa-star" data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="voto_generale" id="voto_generale" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="commento">Commento (opzionale)</label>
+                    <textarea class="form-control" name="commento" id="commento" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Invia Recensione</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'recensioni/base_recensioni.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Recensioni Supermercati</h1>
+    
+    <div class="row">
+        {% for negozio in negozi %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ negozio.nome }}</h5>
+                    <div class="stars-container">
+                        {% for i in "12345" %}
+                            <i class="fas fa-star {% if i|add:'0' <= negozio.media_recensioni %}text-warning{% else %}text-muted{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <p class="card-text">Media: {{ negozio.media_recensioni|floatformat:1 }}/5</p>
+                    <a href="{% url 'recensioni:recensioni_negozio' negozio.id %}" class="btn btn-primary">Vedi Recensioni</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Avg
 
 # Create your models here.
 
@@ -10,6 +11,14 @@ class Negozio(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def aggiorna_medie_recensioni(self):
+        recensioni = self.recensioni.all()
+        if recensioni:
+            self.recensione_media = recensioni.aggregate(
+                Avg('voto_generale'))['voto_generale__avg']
+            self.save()
+        return self.recensione_media
 
     class Meta:
         verbose_name_plural = 'Negozi'

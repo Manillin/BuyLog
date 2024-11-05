@@ -1,0 +1,56 @@
+.stars {
+    display: inline-block;
+    cursor: pointer;
+    user-select: none;
+}
+
+.stars i {
+    font-size: 1.5em;
+    padding: 0 5px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.stars i:hover {
+    transform: scale(1.2);
+    color: #ffc107;
+}
+
+.stars i.active,
+.stars i.fas.text-warning {
+    color: #ffc107;
+}
+
+.stars-container i {
+    font-size: 1.2em;
+}
+
+/* Nuove classi per le recensioni */
+.review-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+}
+
+.review-body {
+    padding: 15px;
+}
+
+.rating-detail {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.rating-label {
+    color: #6c757d;
+}

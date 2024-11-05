@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}  <!-- Importante: mantiene il CSS del template padre -->
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS specifico per recensioni -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+    <!-- JavaScript specifico per recensioni -->
+    <script src="{% static 'js/stars.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    {% block recensioni_content %}{% endblock %}
+{% endblock %}
