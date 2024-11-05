@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">Get Started!</h1>
+                <p class="text-muted">Tieni traccia delle tue spese e risparmia in modo intelligente</p>
+            </div>
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        {{ error }}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+                    </div>
+                    {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" name="first_name" class="form-control" placeholder="Nome" required>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" name="last_name" class="form-control" placeholder="Cognome" required>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        <input type="email" name="email" class="form-control" placeholder="Email" required>
+                    </div>
+                    {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="alert alert-info mb-3">
+                    <h6 class="mb-2">password must have:</h6>
+                    <ul class="mb-0">
+                        <li>at least 8 characters</li>
+                        <li>at least one uppercase letter</li>
+                        <li>at least one number</li>
+                        <li>at least one letter</li>
+                    </ul>
+                </div>
+
+                <div class="form-group mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" name="password1" class="form-control" placeholder="Password" required>
+                    </div>
+                    {% if form.password1.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password1.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" name="password2" class="form-control" placeholder="Conferma Password" required>
+                    </div>
+                    {% if form.password2.errors %}
+                    <div class="invalid-feedback d-block">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">Registrati ora</button>
+
+                <div class="text-center mb-3">
+                    <span class="text-muted">oppure</span>
+                </div>
+
+                <a href="{% url 'login' %}" class="btn btn-outline-secondary w-100">
+                    Hai già un account? Accedi
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 
