@@ -13,6 +13,8 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.db.models import Count
+from django.utils import timezone
 
 # Create your views here.
 
@@ -38,8 +40,16 @@ class NegozioRecensioniView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        recensioni_list = Review.objects.filter(
-            negozio=self.object).order_by('-data')
+        recensioni_list = Review.objects.filter(negozio=self.object)
+
+        # Filtro
+        order_by = self.request.GET.get(
+            'order_by', '-data')  # Default: più recenti
+        if order_by == 'likes':
+            recensioni_list = recensioni_list.annotate(
+                like_count=Count('likes')).order_by('-like_count', '-data')
+        else:
+            recensioni_list = recensioni_list.order_by(order_by)
 
         # Calcola la media delle recensioni
         media = recensioni_list.aggregate(
@@ -47,12 +57,13 @@ class NegozioRecensioniView(DetailView):
         )['voto_generale__avg'] or 0
 
         # Paginazione
-        paginator = Paginator(recensioni_list, 5)  # 5 recensioni per pagina
+        paginator = Paginator(recensioni_list, 5)
         page = self.request.GET.get('page')
         recensioni = paginator.get_page(page)
 
         context['recensioni'] = recensioni
         context['media_recensioni'] = media
+        context['current_order'] = order_by
         return context
 
 
@@ -92,6 +103,8 @@ class AggiungiRecensioneView(LoginRequiredMixin, CreateView):
             # Aggiorna la recensione esistente invece di crearne una nuova
             for field in self.fields:
                 setattr(existing_review, field, form.cleaned_data[field])
+            existing_review.data = timezone.now()  # Aggiorna la data con l'ultima modifica
+            existing_review.likes.clear()  # Rimuove tutti i like
             existing_review.save()
             self.object = existing_review
         else:
@@ -101,7 +114,6 @@ class AggiungiRecensioneView(LoginRequiredMixin, CreateView):
             self.object.negozio = negozio
             self.object.save()
 
-        # Invece di chiamare super().form_valid(form), ritorniamo direttamente alla pagina del negozio
         return redirect(reverse('recensioni:recensioni_negozio', kwargs={'pk': negozio.id}))
 
 
