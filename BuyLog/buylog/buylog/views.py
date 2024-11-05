@@ -19,7 +19,7 @@ def home(request):
 
 class UserCreateView(CreateView):
     form_class = CreaUtenteCliente
-    template_name = 'user_create.html'
+    template_name = 'registration/register.html'
     success_url = reverse_lazy('login')
 
 # DetailView ha bisogno di sapere l'oggetto da visualizzare (dal DB), per questo
