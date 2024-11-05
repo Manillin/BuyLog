@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RecensioniListView, NegozioRecensioniView, AggiungiRecensioneView, testfunc
+from .views import RecensioniListView, NegozioRecensioniView, AggiungiRecensioneView, toggle_like
 
 app_name = 'recensioni'
 
@@ -9,6 +9,5 @@ urlpatterns = [
          name='recensioni_negozio'),
     path('aggiungi/<int:negozio_id>/',
          AggiungiRecensioneView.as_view(), name='aggiungi_recensione'),
-    path('test/', testfunc, name='testfunc')
-    # path('like/<int:review_id>/',, name='toggle_like'),
+    path('like/<int:review_id>/', toggle_like, name='toggle_like'),
 ]
