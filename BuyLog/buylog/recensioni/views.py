@@ -42,28 +42,26 @@ class NegozioRecensioniView(DetailView):
         context = super().get_context_data(**kwargs)
         recensioni_list = Review.objects.filter(negozio=self.object)
 
-        # Filtro
-        order_by = self.request.GET.get(
-            'order_by', '-data')  # Default: più recenti
+        # Calcola la media delle recensioni
+        media_recensioni = 0
+        if recensioni_list.exists():
+            media_recensioni = recensioni_list.aggregate(
+                Avg('voto_generale'))['voto_generale__avg']
+        context['media_recensioni'] = media_recensioni
+
+        # Ordina per data o likes
+        order_by = self.request.GET.get('order_by', '-data')
+        context['current_order'] = order_by
+
         if order_by == 'likes':
             recensioni_list = recensioni_list.annotate(
                 like_count=Count('likes')).order_by('-like_count', '-data')
         else:
-            recensioni_list = recensioni_list.order_by(order_by)
+            recensioni_list = recensioni_list.order_by('-data')
 
-        # Calcola la media delle recensioni
-        media = recensioni_list.aggregate(
-            Avg('voto_generale')
-        )['voto_generale__avg'] or 0
-
-        # Paginazione
         paginator = Paginator(recensioni_list, 5)
         page = self.request.GET.get('page')
-        recensioni = paginator.get_page(page)
-
-        context['recensioni'] = recensioni
-        context['media_recensioni'] = media
-        context['current_order'] = order_by
+        context['recensioni'] = paginator.get_page(page)
         return context
 
 
@@ -138,13 +136,29 @@ def testfunc(request):
 
 def recensioni_negozio(request, negozio_id):
     negozio = get_object_or_404(Negozio, pk=negozio_id)
-    recensioni_list = Review.objects.filter(negozio=negozio).order_by('-data')
+    recensioni_list = Review.objects.filter(negozio=negozio)
 
-    paginator = Paginator(recensioni_list, 5)  # 5 recensioni per pagina
+    # Calcola la media di tutte le valutazioni
+    media_recensioni = 0
+    if recensioni_list.exists():
+        media_recensioni = sum(r.calcola_media()
+                               for r in recensioni_list) / recensioni_list.count()
+
+    # Ordina per data o likes
+    order_by = request.GET.get('order_by', '-data')
+    if order_by == 'likes':
+        recensioni_list = recensioni_list.annotate(
+            like_count=Count('likes')).order_by('-like_count', '-data')
+    else:
+        recensioni_list = recensioni_list.order_by('-data')
+
+    paginator = Paginator(recensioni_list, 5)
     page = request.GET.get('page')
     recensioni = paginator.get_page(page)
 
     return render(request, 'recensioni/recensioni_negozio.html', {
         'negozio': negozio,
-        'recensioni': recensioni
+        'recensioni': recensioni,
+        'media_recensioni': media_recensioni,
+        'current_order': order_by
     })
