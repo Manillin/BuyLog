@@ -71,8 +71,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="commento">Commento (opzionale)</label>
-                    <textarea class="form-control" name="commento" id="commento" rows="3"></textarea>
+                    <label for="commento">Commento (opzionale, massimo 300 caratteri)</label>
+                    <textarea class="form-control" name="commento" id="commento" rows="3" maxlength="300"></textarea>
+                    <small class="text-muted">Caratteri rimanenti: <span id="char-count">300</span></small>
+                    <div class="invalid-feedback">
+                        Il commento non può superare i 300 caratteri.
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-3">Invia Recensione</button>

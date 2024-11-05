@@ -11,8 +11,10 @@
 {% endblock %}
 
 {% block extra_js %}
-    <!-- JavaScript specifico per recensioni -->
+    {{ block.super }} <!-- Importante: mantiene il JS del template padre (jQuery, Popper.js e Bootstrap.js) -->
+    <script src="{% static 'js/recensioni.js' %}"></script>
     <script src="{% static 'js/stars.js' %}"></script>
+    <script src="{% static 'js/commento.js' %}"></script>
 {% endblock %}
 
 {% block content %}
