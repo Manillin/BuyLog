@@ -1,87 +1,63 @@
-{% extends 'scontrini/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Carica Scontrino{% endblock %}
-
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow-sm rounded">
-        <div class="card-body">
-            <h1 class="text-center mb-4">Carica Scontrino</h1>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="data">Data</label>
-                    {{ scontrino_form.data }}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h3 class="mb-4">Carica Scontrino</h3>
+                    
+                    <!-- Messaggi di errore -->
+                    <div id="error-message" class="alert alert-warning d-none"></div>
+                    
+                    <form id="scontrino-form" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label class="small text-muted">Data</label>
+                            <input type="text" class="form-control datepicker" id="id_data" name="data" required>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="small text-muted">Nome Negozio</label>
+                            <input type="text" class="form-control" id="id_negozio_nome" name="negozio_nome" required>
+                        </div>
+                        
+                        <div class="text-right mb-4">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#gestioneProdottiModal">
+                                <i class="fas fa-plus mr-2"></i>Gestisci Prodotti
+                            </button>
+                        </div>
+                        
+                        <input type="hidden" id="prodotti_count" name="prodotti_count" value="0">
+                        
+                        <div class="text-right">
+                            <button type="submit" class="btn btn-success" id="salva_scontrino_button" disabled>
+                                <i class="fas fa-save mr-2"></i>Salva Scontrino
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="negozio_nome">Nome Negozio</label>
-                    {{ scontrino_form.negozio_nome }}
-                </div>
-                <div class="text-center">
-                    <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#aggiungiProdottoModal">
-                        Aggiungi Prodotto
-                    </button>
-                    <button type="submit" name="salva_scontrino" id="salva_scontrino_button" class="btn btn-success" disabled>
-                        Salva Scontrino
-                    </button>
-                </div>
-                <input type="hidden" id="prodotti_count" name="prodotti_count" value="{{ prodotti|length }}">
-            </form>
-
-            <h3 class="mt-4">Prodotti Aggiunti</h3>
-            <div class="table-responsive">
-                <ul id="prodotti-list" class="list-group">
-                {% for prodotto in prodotti %}
-                    <li class="list-group-item">{{ prodotto.prodotto }} - {{ prodotto.quantita }} x {{ prodotto.prezzo_unitario }} €</li>
-                {% empty %}
-                    <li id="no-prodotti" class="list-group-item">Nessun prodotto aggiunto</li>
-                {% endfor %}
-                </ul>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="aggiungiProdottoModal" tabindex="-1" role="dialog" aria-labelledby="aggiungiProdottoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="aggiungiProdottoModalLabel">Aggiungi Prodotto</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="aggiungiProdottoForm">
-                    <div class="form-group">
-                        <label for="nome_prodotto">Nome Prodotto</label>
-                        <input type="text" class="form-control" id="nome_prodotto" name="nome_prodotto" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="quantita">Quantità</label>
-                        <input type="number" class="form-control" id="quantita" name="quantita" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="prezzo_unitario">Prezzo Unitario</label>
-                        <input type="number" step="0.01" class="form-control" id="prezzo_unitario" name="prezzo_unitario" required>
-                    </div>
-                    <div id="error-message" class="alert alert-danger d-none" role="alert">
-                        Quantità con cifre decimali non permesse, arrotondamento all'intero più vicino.
-                    </div>
-                    <button type="button" class="btn btn-primary" id="addProductButton">Aggiungi</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'scontrini/partials/modale_prodotti.html' %}
 
-<!-- Includi il file JavaScript -->
-<script src="{% static 'scontrini/js/carica_scontrino.js' %}"></script>
+<!-- Scripts -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
+<script src="{% static 'scontrini/js/gestione_scontrino.js' %}"></script>
 <script>
-    // Passa le variabili Django al file JavaScript
-    const aggiungi_prodotto_url = "{% url 'scontrini:aggiungi_prodotto' %}";
-    const csrf_token = "{{ csrf_token }}";
+    flatpickr(".datepicker", {
+        locale: "it",
+        dateFormat: "Y-m-d",
+        defaultDate: "today",
+        altInput: true,
+        altFormat: "d/m/Y",
+        disableMobile: true
+    });
 </script>
 {% endblock %}

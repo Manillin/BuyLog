@@ -24,6 +24,7 @@ from django.utils.text import slugify  # pulire nome negozio rimuovendo spazi
 from django.db.models import Q  # ricerche case insensitive
 from .cache_monitor import CacheMonitor
 from django.core.paginator import Paginator
+import json
 
 
 # Create your views here.
@@ -40,91 +41,65 @@ class ScontriniLandingView(CreateView):
     success_url = reverse_lazy('scontrinilanding')
 
 
+@login_required
 def carica_scontrino(request):
-    if 'prodotti' not in request.session:
-        request.session['prodotti'] = []
+    if request.method == 'POST':
+        try:
+            data = request.POST.get('data')
+            negozio_nome = request.POST.get('negozio_nome').strip()
+            prodotti_json = request.POST.get('prodotti_json')
 
-    negozio_nome_sessione = request.session.get('negozio_nome', '')
+            if not all([data, negozio_nome, prodotti_json]):
+                messages.error(request, 'Tutti i campi sono obbligatori')
+                return redirect('scontrini:carica_scontrino')
 
-    if request.method == 'POST' and 'aggiungi_prodotto' in request.POST:
-        prodotto_form = ListaProdottiForm(request.POST)
-        scontrino_form = ScontrinoForm(request.POST)
+            # Valida i prodotti
+            prodotti_list = json.loads(prodotti_json)
+            for prodotto in prodotti_list:
+                if int(prodotto['quantita']) <= 0:
+                    messages.error(
+                        request, 'La quantità deve essere maggiore di zero')
+                    return redirect('scontrini:carica_scontrino')
+                if float(prodotto['prezzo']) <= 0:
+                    messages.error(
+                        request, 'Il prezzo deve essere maggiore di zero')
+                    return redirect('scontrini:carica_scontrino')
 
-        if prodotto_form.is_valid():
-            prodotto_dati = prodotto_form.cleaned_data
-            prodotto_dati['quantita'] = float(prodotto_dati['quantita'])
-            prodotto_dati['prezzo_unitario'] = float(
-                prodotto_dati['prezzo_unitario'])
-            request.session['prodotti'].append(prodotto_dati)
-            request.session.modified = True
-
-        if scontrino_form.is_valid():
-            negozio_nome = scontrino_form.cleaned_data['negozio_nome'].strip()
-            request.session['negozio_nome'] = negozio_nome
-
-        return redirect('scontrini:carica_scontrino')
-
-    elif request.method == 'POST' and 'salva_scontrino' in request.POST:
-        scontrino_form = ScontrinoForm(request.POST)
-        if scontrino_form.is_valid() and len(request.session['prodotti']) > 0:
-            negozio_nome = scontrino_form.cleaned_data['negozio_nome'].strip()
-            negozio_nome_pulito = slugify(
-                negozio_nome, allow_unicode=True).replace("-", "").lower()
-
-            negozio = Negozio.objects.filter(
-                Q(nome__iexact=negozio_nome_pulito) | Q(nome__icontains=negozio_nome_pulito.replace(" ", ""))).first()
-
+            # Cerca il negozio case-insensitive o creane uno nuovo
+            negozio = Negozio.objects.filter(nome__iexact=negozio_nome).first()
             if not negozio:
                 negozio = Negozio.objects.create(nome=negozio_nome)
 
-            # NEW:
-            totale_scontrino = sum(
-                prodotto['quantita'] * prodotto['prezzo_unitario'] for prodotto in request.session['prodotti']
-            )
-
+            # Crea lo scontrino
             scontrino = Scontrino.objects.create(
                 utente=request.user,
                 negozio=negozio,
-                data=scontrino_form.cleaned_data['data'],
-                # NEW:
-                totale=totale_scontrino
+                data=data,
+                totale=float(request.POST.get('totale', 0))
             )
 
-            for prodotto_dati in request.session['prodotti']:
-                prodotto_nome = prodotto_dati['prodotto']
-                prodotto_nome_pulito = slugify(
-                    prodotto_nome, allow_unicode=True).replace("-", "").lower()
-
-                prodotto = Prodotto.objects.filter(
-                    nome__iexact=prodotto_nome_pulito).first()
-                if not prodotto:
-                    prodotto = Prodotto.objects.create(nome=prodotto_nome)
-
+            # Salva i prodotti
+            prodotti_list = json.loads(prodotti_json)
+            for prodotto_data in prodotti_list:
+                prodotto, _ = Prodotto.objects.get_or_create(
+                    nome=prodotto_data['nome']
+                )
                 ListaProdotti.objects.create(
                     scontrino=scontrino,
                     prodotto=prodotto,
-                    quantita=prodotto_dati['quantita'],
-                    prezzo_unitario=prodotto_dati['prezzo_unitario']
+                    quantita=int(prodotto_data['quantita']),
+                    prezzo_unitario=float(prodotto_data['prezzo'])
                 )
 
-            del request.session['prodotti']
-            if 'negozio_nome' in request.session:
-                del request.session['negozio_nome']
-
+            messages.success(request, 'Scontrino salvato con successo')
             return redirect('scontrini:successo')
 
-    else:
-        scontrino_form = ScontrinoForm(
-            initial={'negozio_nome': negozio_nome_sessione})
-        prodotto_form = ListaProdottiForm()
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            messages.error(request, 'Errore nel formato dei dati')
+            return redirect('scontrini:carica_scontrino')
 
-    prodotti_nella_sessione = request.session.get('prodotti', [])
+    return render(request, 'scontrini/carica_scontrino.html')
 
-    return render(request, 'scontrini/carica_scontrino.html', {
-        'scontrino_form': scontrino_form,
-        'prodotto_form': prodotto_form,
-        'prodotti': prodotti_nella_sessione
-    })
 
 # Handler della richiesta AJAX mandata da js per aggiungere un prodotto alla sessione
 
@@ -627,32 +602,59 @@ class DettagliProdottoView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         prodotto = self.get_object()
-        lista_prodotti = ListaProdotti.objects.filter(prodotto=prodotto)
-        scontrini = Scontrino.objects.filter(prodotti__prodotto=prodotto)
+        filtro = self.request.GET.get('filtro', 'all_time')
 
-        # Calcolo quantità totale ordinata
+        # Ottieni gli scontrini filtrati per data
+        if filtro == '1mese':
+            scontrini = Scontrino.objects.filter(
+                data__gte=now()-timedelta(days=30),
+                utente=self.request.user
+            )
+        elif filtro == '6mesi':
+            scontrini = Scontrino.objects.filter(
+                data__gte=now()-timedelta(days=180),
+                utente=self.request.user
+            )
+        elif filtro == '1anno':
+            scontrini = Scontrino.objects.filter(
+                data__gte=now()-timedelta(days=365),
+                utente=self.request.user
+            )
+        else:  # all_time
+            scontrini = Scontrino.objects.filter(utente=self.request.user)
+
+        # Filtriamo i prodotti basandoci sugli scontrini filtrati
+        lista_prodotti = ListaProdotti.objects.filter(
+            prodotto=prodotto,
+            scontrino__in=scontrini
+        )
+
+        # Il resto dei calcoli rimane invariato ma usa lista_prodotti filtrata
         context['quantita_ordinata'] = lista_prodotti.aggregate(
             Sum('quantita'))['quantita__sum'] or 0
 
-        # Calcolo costo totale (prezzo_unitario * quantità per ogni riga)
         costo_totale = lista_prodotti.aggregate(
             totale=Sum(F('prezzo_unitario') * F('quantita')))['totale'] or 0
         context['costo_totale'] = costo_totale
 
-        # Calcolo costo medio (costo totale / quantità totale)
         context['costo_medio'] = round(float(
             costo_totale) / context['quantita_ordinata'], 2) if context['quantita_ordinata'] else 0
 
-        # Altri calcoli
-        context['supermercati_diversi'] = scontrini.values(
-            'negozio').distinct().count()
+        context['supermercati_diversi'] = scontrini.filter(
+            prodotti__prodotto=prodotto).values('negozio').distinct().count()
         context['prezzo_piu_caro'] = lista_prodotti.aggregate(
             Max('prezzo_unitario'))['prezzo_unitario__max'] or 0
         context['prezzo_piu_economico'] = lista_prodotti.aggregate(
             Min('prezzo_unitario'))['prezzo_unitario__min'] or 0
-        context['prima_volta_acquistato'] = lista_prodotti.earliest(
-            'scontrino__data').scontrino.data if lista_prodotti.exists() else None
-        context['ultima_volta_acquistato'] = lista_prodotti.latest(
-            'scontrino__data').scontrino.data if lista_prodotti.exists() else None
 
+        if lista_prodotti.exists():
+            context['prima_volta_acquistato'] = lista_prodotti.earliest(
+                'scontrino__data').scontrino.data
+            context['ultima_volta_acquistato'] = lista_prodotti.latest(
+                'scontrino__data').scontrino.data
+        else:
+            context['prima_volta_acquistato'] = None
+            context['ultima_volta_acquistato'] = None
+
+        context['filtro_attuale'] = filtro
         return context

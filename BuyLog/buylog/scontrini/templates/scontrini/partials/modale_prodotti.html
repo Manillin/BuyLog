@@ -1,0 +1,81 @@
+<div class="modal fade" id="gestioneProdottiModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Gestione Prodotti</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Form per aggiungere prodotto -->
+                <form id="aggiungiProdottoForm" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label class="small text-muted">Nome Prodotto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-box"></i></span>
+                                    <input type="text" class="form-control" id="nome_prodotto" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small text-muted">Quantità</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                    <input type="number" class="form-control" id="quantita" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small text-muted">Prezzo Unitario (€)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
+                                    <input type="number" min="0.01" step="0.01" class="form-control" id="prezzo_unitario" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right mt-3">
+                        <button type="submit" class="btn btn-primary">Aggiungi Prodotto</button>
+                    </div>
+                </form>
+
+                <!-- Tabella prodotti -->
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0">Prodotto</th>
+                                <th class="border-0 text-center">Quantità</th>
+                                <th class="border-0 text-right">Prezzo</th>
+                                <th class="border-0 text-right">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prodotti-modale-list">
+                            <!-- I prodotti verranno inseriti qui dinamicamente -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="border-0 text-right">
+                                    <strong>Totale Scontrino:</strong>
+                                </td>
+                                <td class="border-0 text-right">
+                                    <strong id="totale_scontrino">0.00 €</strong>
+                                </td>
+                                <td class="border-0"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-success" id="salvaProdottiButton">Salva Prodotti</button>
+            </div>
+        </div>
+    </div>
+</div> 
