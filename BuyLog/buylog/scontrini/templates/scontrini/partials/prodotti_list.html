@@ -1,7 +1,10 @@
+
+<!-- Incluso nel template tutti_prodotti.html (row 36)-->
+
 {% for prodotto in prodotti %}
 <tr>
     <td>
-        <a href="{% url 'scontrini:dettagli_prodotto' pk=prodotto.prodotto__id %}" class="text-primary text-decoration-none">
+        <a href="{% url 'scontrini:dettagli_prodotto' pk=prodotto.prodotto__id %}?filtro={{ filtro_attuale }}" class="text-primary text-decoration-none">
             {{ prodotto.prodotto__nome }}
         </a>
     </td>

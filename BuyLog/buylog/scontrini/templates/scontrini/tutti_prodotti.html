@@ -40,7 +40,7 @@
 
     <!-- Paginazione -->
     <div class="d-flex justify-content-center mt-4">
-        {% if prodotti.paginator.num_pages > 1 %}
+        {% if prodotti.paginator.num_pages > 0 %}
         <nav aria-label="Navigazione pagine">
             <ul class="pagination">
                 {% if prodotti.has_previous %}

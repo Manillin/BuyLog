@@ -4,38 +4,94 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Dettagli Scontrino</h1>
-    <p><strong>Negozio:</strong> {{ scontrino.negozio.nome }}</p>
-    <p><strong>Data:</strong> {{ scontrino.data|date:"M d, Y" }}</p>
-    <p><strong>Totale:</strong> {{ scontrino.totale }} €</p>
-    <h2>Prodotti</h2>
-    <ul class="list-group">
-        {% for prodotto in prodotti %}
-        <li class="list-group-item">{{ prodotto.prodotto.nome }} - {{ prodotto.quantita }} x {{ prodotto.prezzo_unitario }} $</li>
-        {% endfor %}
-    </ul>
-    <button class="btn btn-danger mt-3" data-toggle="modal" data-target="#deleteModal">Elimina scontrino</button>
-</div>
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Dettagli Scontrino</h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <!-- controlla dimensione icone: fa-2x ; me-2 spaziatura -->
+                        <i class="fas fa-store fa-2x mr-2 text-primary"></i>
+                        <div>
+                            <h6 class="mb-0">Negozio</h6>
+                            <p class="mb-0">{{ scontrino.negozio.nome }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar-alt fa-2x mr-3 text-primary"></i>
+                        <div>
+                            <h6 class="mb-0">Data</h6>
+                            <p class="mb-0">{{ scontrino.data|date:"d M Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-euro-sign fa-2x mr-3 text-primary"></i>
+                        <div>
+                            <h6 class="mb-0">Totale</h6>
+                            <p class="mb-0">{{ scontrino.totale|floatformat:2 }} €</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<!-- Modale di Conferma -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Conferma Eliminazione</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            <h4 class="mb-3"><i class="fas fa-shopping-cart fa-1x mr-3"></i>Prodotti</h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Prodotto</th>
+                            <th>Quantità</th>
+                            <th>Prezzo Unitario</th>
+                            <th>Totale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prodotto in prodotti %}
+                        <tr>
+                            <td>{{ prodotto.prodotto.nome }}</td>
+                            <td>{{ prodotto.quantita }}</td>
+                            <td>{{ prodotto.prezzo_unitario|floatformat:2 }} €</td>
+                            <td>{{ prodotto.totale|floatformat:2 }} €</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if prodotti.paginator.num_pages > 0 %}
+            <nav aria-label="Navigazione pagine" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if prodotti.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; Prima</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in prodotti.paginator.page_range %}
+                        <li class="page-item {% if prodotti.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+
+                    {% if prodotti.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ prodotti.paginator.num_pages }}">Ultima &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            <div class="mt-4">
+                <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+                    <i class="fas fa-trash-alt me-2"></i>Elimina scontrino
                 </button>
-            </div>
-            <div class="modal-body">
-                Sei sicuro di voler cancellare questo scontrino?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
-                <form method="post" action="{% url 'scontrini:elimina_scontrino' scontrino.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Conferma</button>
-                </form>
             </div>
         </div>
     </div>

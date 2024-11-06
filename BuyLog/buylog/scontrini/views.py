@@ -153,8 +153,24 @@ def lista_scontrini(request):
 def dettagli_scontrino(request, scontrino_id):
     scontrino = get_object_or_404(
         Scontrino, id=scontrino_id, utente=request.user)
-    prodotti = scontrino.prodotti.all()
-    return render(request, 'scontrini/dettagli_scontrino.html', {'scontrino': scontrino, 'prodotti': prodotti})
+    prodotti_list = scontrino.prodotti.all()
+
+    # Calcoliamo il totale per ogni prodotto
+    for prodotto in prodotti_list:
+        prodotto.totale = prodotto.prezzo_unitario * prodotto.quantita
+
+    paginator = Paginator(prodotti_list, 10)
+    page = request.GET.get('page', 1)
+
+    try:
+        prodotti = paginator.page(page)
+    except:
+        prodotti = paginator.page(1)
+
+    return render(request, 'scontrini/dettagli_scontrino.html', {
+        'scontrino': scontrino,
+        'prodotti': prodotti
+    })
 
 
 @login_required
@@ -380,19 +396,21 @@ def aggiorna_tabella_prodotti(request):
     paginator = Paginator(list(prodotti), 15)
     prodotti_paginati = paginator.get_page(page)
 
+    context = {
+        'prodotti': prodotti_paginati,
+        'filtro_attuale': filtro,
+        'ordine_attuale': ordine
+    }
+
     # Renderizza sia la lista che la paginazione
     html = render_to_string(
         'scontrini/partials/prodotti_list.html',
-        {'prodotti': prodotti_paginati}
+        context
     )
 
     pagination_html = render_to_string(
         'scontrini/partials/pagination.html',
-        {
-            'prodotti': prodotti_paginati,
-            'filtro_attuale': filtro,
-            'ordine_attuale': ordine
-        }
+        context
     )
 
     return JsonResponse({
