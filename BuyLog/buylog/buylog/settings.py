@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'scontrini',
     'recensioni',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
