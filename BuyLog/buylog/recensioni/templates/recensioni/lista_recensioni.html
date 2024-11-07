@@ -22,5 +22,42 @@
         </div>
         {% endfor %}
     </div>
+    
+    <!-- Paginazione -->
+    {% if negozi.paginator.num_pages > 1 %}
+    <nav aria-label="Navigazione pagine" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if negozi.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">&laquo; Prima</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ negozi.previous_page_number }}">Precedente</a>
+                </li>
+            {% endif %}
+
+            {% for num in negozi.paginator.page_range %}
+                {% if negozi.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > negozi.number|add:'-3' and num < negozi.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if negozi.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ negozi.next_page_number }}">Successiva</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ negozi.paginator.num_pages }}">Ultima &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}
