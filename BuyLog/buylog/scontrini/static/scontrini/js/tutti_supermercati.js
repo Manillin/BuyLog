@@ -1,17 +1,47 @@
 $(document).ready(function () {
-    $('.filtro-btn').click(function () {
-        var filtro = $(this).data('filtro');
-        var ordine = $('.sort-link.active').data('ordine') || '-numero_visite';
+    function updateURL(params) {
+        const url = new URL(window.location);
+        Object.keys(params).forEach(key => {
+            url.searchParams.set(key, params[key]);
+        });
+        window.history.pushState({}, '', url);
+    }
+
+    function aggiornaTabella(params) {
         $.ajax({
             type: 'GET',
             url: '/scontrini/aggiorna_tabella_supermercati/',
-            data: {
-                'filtro': filtro,
-                'ordine': ordine
-            },
+            data: params,
             success: function (data) {
                 $('#supermercati-list').html(data.html);
+                $('.pagination-container').html(data.pagination);
+                updateURL(params);
             }
+        });
+    }
+
+    $('.filtro-btn').click(function () {
+        var filtro = $(this).data('filtro');
+        var ordine = $('.sort-link.active').data('ordine') || '-numero_visite';
+        $('.filtro-btn').removeClass('active');
+        $(this).addClass('active');
+        aggiornaTabella({
+            'filtro': filtro,
+            'ordine': ordine,
+            'page': 1
+        });
+    });
+
+    $(document).on('click', '.pagination .page-link', function (e) {
+        e.preventDefault();
+        var page = $(this).attr('href').split('page=')[1].split('&')[0];
+        var filtro = $('.filtro-btn.active').data('filtro') || 'all_time';
+        var ordine = $('.sort-link.active').data('ordine') || '-numero_visite';
+
+        aggiornaTabella({
+            'page': page,
+            'filtro': filtro,
+            'ordine': ordine
         });
     });
 
@@ -29,6 +59,7 @@ $(document).ready(function () {
             },
             success: function (data) {
                 $('#supermercati-list').html(data.html);
+                $('.pagination-container').html(data.pagination);
             }
         });
     });
@@ -48,6 +79,7 @@ $(document).ready(function () {
             },
             success: function (data) {
                 $('#supermercati-list').html(data.html);
+                $('.pagination-container').html(data.pagination);
             }
         });
     });
