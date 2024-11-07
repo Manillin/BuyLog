@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Avg
+from django.utils import timezone
+from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -47,6 +51,23 @@ class Scontrino(models.Model):
     class Meta:
         verbose_name_plural = 'Scontrini'
 
+    def clean(self):
+        cleaned_data = super().clean()
+        if hasattr(self, 'data') and self.data:
+            if self.data > timezone.now():
+                raise ValidationError(
+                    {'data': "La data non può essere nel futuro"})
+        return cleaned_data
+
+    def calcola_totale(self):
+        totale = self.prodotti.aggregate(
+            total=models.Sum(models.F('quantita') *
+                             models.F('prezzo_unitario'))
+        )['total'] or 0
+        self.totale = totale
+        self.save()
+        return totale
+
 
 class ListaProdotti(models.Model):
     scontrino = models.ForeignKey(
@@ -69,3 +90,8 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} Profile"
+
+
+@receiver(post_save, sender=ListaProdotti)
+def aggiorna_totale_scontrino(sender, instance, **kwargs):
+    instance.scontrino.calcola_totale()

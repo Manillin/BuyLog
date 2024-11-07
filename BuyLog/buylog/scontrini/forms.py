@@ -1,5 +1,6 @@
 from django import forms
 from django.utils import timezone
+from datetime import datetime, date, timedelta
 from .models import *
 
 
@@ -25,6 +26,28 @@ class ScontrinoForm(forms.ModelForm):
         self.fields['data'].widget.format = '%Y-%m-%d'
         self.fields['data'].input_formats = ['%Y-%m-%d']
 
+    def clean_data(self):
+        data = self.cleaned_data.get('data')
+        if not data:
+            raise forms.ValidationError("La data è obbligatoria")
+
+        # Se è una data, convertiamola in datetime
+        if isinstance(data, date):
+            data = timezone.make_aware(
+                datetime.combine(data, datetime.min.time()))
+
+        # Confrontiamo le date
+        if data > timezone.now():
+            raise forms.ValidationError("La data non può essere nel futuro")
+
+        return data
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if 'data' not in cleaned_data:
+            return cleaned_data
+        return cleaned_data
+
 
 class ListaProdottiForm(forms.ModelForm):
     prodotto = forms.CharField(
@@ -33,6 +56,20 @@ class ListaProdottiForm(forms.ModelForm):
     class Meta:
         model = ListaProdotti
         fields = ['quantita', 'prezzo_unitario']
+
+    def clean_quantita(self):
+        quantita = self.cleaned_data.get('quantita')
+        if quantita <= 0:
+            raise forms.ValidationError(
+                "La quantità deve essere maggiore di zero")
+        return quantita
+
+    def clean_prezzo_unitario(self):
+        prezzo = self.cleaned_data.get('prezzo_unitario')
+        if prezzo <= 0:
+            raise forms.ValidationError(
+                "Il prezzo deve essere maggiore di zero")
+        return prezzo
 
 
 class NegozioForm(forms.ModelForm):

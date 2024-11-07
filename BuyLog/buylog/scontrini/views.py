@@ -427,10 +427,21 @@ class TuttiSupermercatiView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         filtro = self.request.GET.get('filtro', 'all_time')
         ordine = self.request.GET.get('ordine', '-numero_visite')
+        page = self.request.GET.get('page', 1)
+
         context['filtro_attuale'] = filtro
         context['ordine_attuale'] = ordine
+
         supermercati = self.get_supermercati_filtrati(filtro, ordine, user)
-        context['supermercati'] = supermercati
+
+        # Aggiungi paginazione
+        paginator = Paginator(list(supermercati), 10)
+        try:
+            supermercati_paginati = paginator.page(page)
+        except:
+            supermercati_paginati = paginator.page(1)
+
+        context['supermercati'] = supermercati_paginati
         return context
 
     def get_supermercati_filtrati(self, filtro, ordine, user):
@@ -455,6 +466,7 @@ class TuttiSupermercatiView(LoginRequiredMixin, TemplateView):
 def aggiorna_tabella_supermercati(request):
     filtro = request.GET.get('filtro', 'all_time')
     ordine = request.GET.get('ordine', '-numero_visite')
+    page = request.GET.get('page', 1)
     user = request.user
 
     if filtro == '1mese':
@@ -474,9 +486,24 @@ def aggiorna_tabella_supermercati(request):
         totale_speso=Sum('totale')
     ).order_by(ordine)
 
+    paginator = Paginator(list(supermercati), 10)
+    supermercati_paginati = paginator.get_page(page)
+
+    context = {
+        'supermercati': supermercati_paginati,
+        'filtro_attuale': filtro,
+        'ordine_attuale': ordine
+    }
+
     html = render_to_string(
-        'scontrini/partials/supermercati_list.html', {'supermercati': supermercati})
-    return JsonResponse({'html': html})
+        'scontrini/partials/supermercati_list.html', context)
+    pagination_html = render_to_string(
+        'scontrini/partials/pagination.html', context)
+
+    return JsonResponse({
+        'html': html,
+        'pagination': pagination_html
+    })
 
 
 # Visualizzazione pagina DEMO:
