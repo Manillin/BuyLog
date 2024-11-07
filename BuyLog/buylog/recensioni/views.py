@@ -23,13 +23,19 @@ class RecensioniListView(ListView):
     model = Review
     template_name = 'recensioni/lista_recensioni.html'
     context_object_name = 'recensioni'
-    paginate_by = 10
+    paginate_by = 9
+
+    def get_queryset(self):
+        # Questo metodo sostituisce il queryset predefinito
+        return Negozio.objects.annotate(
+            num_recensioni=Count('recensioni'),
+            media_recensioni=Avg('recensioni__voto_generale')
+        ).order_by('-num_recensioni', '-media_recensioni')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['negozi'] = Negozio.objects.annotate(
-            media_recensioni=Avg('recensioni__voto_generale')
-        ).order_by('-media_recensioni')
+        # Usa page_obj invece di sovrascrivere negozi
+        context['negozi'] = context['page_obj']
         return context
 
 
