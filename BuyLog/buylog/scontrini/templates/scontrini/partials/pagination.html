@@ -1,33 +1,33 @@
-{% if prodotti.paginator.num_pages > 1 %}
-<nav aria-label="Navigazione pagine">
-    <ul class="pagination">
-        {% if prodotti.has_previous %}
+{% if supermercati.paginator.num_pages > 1 %}
+<nav aria-label="Navigazione pagine" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if supermercati.has_previous %}
             <li class="page-item">
                 <a class="page-link" href="?page=1&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">&laquo; Prima</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ prodotti.previous_page_number }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Precedente</a>
+                <a class="page-link" href="?page={{ supermercati.previous_page_number }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Precedente</a>
             </li>
         {% endif %}
 
-        {% for num in prodotti.paginator.page_range %}
-            {% if prodotti.number == num %}
+        {% for num in supermercati.paginator.page_range %}
+            {% if supermercati.number == num %}
                 <li class="page-item active">
                     <span class="page-link">{{ num }}</span>
                 </li>
-            {% elif num > prodotti.number|add:'-3' and num < prodotti.number|add:'3' %}
+            {% elif num > supermercati.number|add:'-3' and num < supermercati.number|add:'3' %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ num }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">{{ num }}</a>
                 </li>
             {% endif %}
         {% endfor %}
 
-        {% if prodotti.has_next %}
+        {% if supermercati.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ prodotti.next_page_number }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Successiva</a>
+                <a class="page-link" href="?page={{ supermercati.next_page_number }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Successiva</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ prodotti.paginator.num_pages }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Ultima &raquo;</a>
+                <a class="page-link" href="?page={{ supermercati.paginator.num_pages }}&filtro={{ filtro_attuale }}&ordine={{ ordine_attuale }}">Ultima &raquo;</a>
             </li>
         {% endif %}
     </ul>
