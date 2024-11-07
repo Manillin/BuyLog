@@ -89,9 +89,36 @@
             {% endif %}
 
             <div class="mt-4">
-                <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
-                    <i class="fas fa-trash-alt me-2"></i>Elimina scontrino
+                <a href="{% url 'scontrini:lista_scontrini' %}" class="btn btn-secondary me-2" style="width: 200px;">
+                    <i class="fas fa-arrow-left mr-2"></i>Torna alla lista
+                </a>
+                <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal" style="width: 200px;">
+                    <i class="fas fa-trash-alt mr-2"></i>Elimina scontrino
                 </button>
+            </div>
+
+            <!-- Modal per eliminazione -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Conferma eliminazione</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Sei sicuro di voler eliminare questo scontrino?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                            <form action="{% url 'scontrini:elimina_scontrino' scontrino.id %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Elimina</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

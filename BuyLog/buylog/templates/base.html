@@ -46,6 +46,9 @@
                             <a class="nav-link" href="{% url 'scontrini:lista_scontrini' %}">Lista Scontrini</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'recensioni:lista_recensioni' %}">Recensioni</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{% url 'user' %}">Profilo</a>
                         </li>
                     {% else %}
@@ -96,9 +99,12 @@
                         {% if user.is_authenticated %}
                             <li class="mb-2"><a href="{% url 'scontrini:dashboard' %}" class="text-muted text-decoration-none">Dashboard</a></li>
                             <li class="mb-2"><a href="{% url 'scontrini:lista_scontrini' %}" class="text-muted text-decoration-none">I tuoi Scontrini</a></li>
+                            <li class="mb-2"><a href="{% url 'recensioni:lista_recensioni' %}" class="text-muted text-decoration-none">Recensioni Negozi</a></li>
+                            <li class="mb-2"><a href="{% url 'scontrini:demo' %}" class="text-muted text-decoration-none">Demo</a></li>
                             <li class="mb-2"><a href="{% url 'user' %}" class="text-muted text-decoration-none">Profilo</a></li>
                         {% else %}
                             <li class="mb-2"><a href="{% url 'scontrini:demo' %}" class="text-muted text-decoration-none">Demo</a></li>
+                            <li class="mb-2"><a href="{% url 'recensioni:lista_recensioni' %}" class="text-muted text-decoration-none">Recensioni Negozi</a></li>
                             <li class="mb-2"><a href="{% url 'login' %}" class="text-muted text-decoration-none">Accedi</a></li>
                             <li class="mb-2"><a href="{% url 'register' %}" class="text-muted text-decoration-none">Registrati</a></li>
                         {% endif %}
