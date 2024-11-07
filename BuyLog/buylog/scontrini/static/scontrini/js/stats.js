@@ -23,8 +23,14 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Spese',
                 data: data,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 2,
+                pointBackgroundColor: '#2563eb',
+                pointBorderWidth: 2,
             }]
         },
         options: {
@@ -33,10 +39,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     type: 'time',
                     time: {
                         unit: 'day'
+                    },
+                    grid: {
+                        display: false
                     }
                 },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
