@@ -24,7 +24,7 @@
     </div>
     
     <!-- Paginazione -->
-    {% if negozi.paginator.num_pages > 1 %}
+    {% if negozi.paginator.num_pages > 0 %}
     <nav aria-label="Navigazione pagine" class="mt-4">
         <ul class="pagination justify-content-center">
             {% if negozi.has_previous %}
