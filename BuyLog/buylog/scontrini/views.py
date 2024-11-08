@@ -1,12 +1,9 @@
 from django.views.generic import DetailView
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
 from django.core.cache import cache
 from .models import Scontrino
 from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper, Max, Min
 from django.views.generic import TemplateView, DetailView
 from django.contrib import messages  # Per gestire i messaggi di avviso
-from django.contrib import messages  # Per gestire messaggi di avviso
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db import models
 from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
@@ -20,8 +17,6 @@ from .forms import *
 from django.http import JsonResponse
 from django.utils.timezone import now, timedelta
 from django.template.loader import render_to_string
-from django.utils.text import slugify  # pulire nome negozio rimuovendo spazi
-from django.db.models import Q  # ricerche case insensitive
 from .cache_monitor import CacheMonitor
 from django.core.paginator import Paginator
 import json
@@ -30,13 +25,12 @@ import json
 # Create your views here.
 
 
-@login_required  # TODO: deve essere visibile anche dalla home questo blocco
+@login_required  
 def stats(request):
     return render(request, template_name='scontrini/stats.html', context={'message': 'User logged!'})
 
 
 class ScontriniLandingView(CreateView):
-    # form_class = CustomFormTBD
     template_name = 'scontrini/scontrini_landing.html'
     success_url = reverse_lazy('scontrinilanding')
 
@@ -554,7 +548,7 @@ class DemoStatsView(TemplateView):
             'top_prodotti': top_prodotti,
             'top_supermercati': top_supermercati,
             'filtro_attuale': filtro,
-            'spese_giorno': list(spese),  # Assicurati che sia una lista
+            'spese_giorno': list(spese),  # lista
             'numero_utenti_registrati': numero_utenti_registrati
         })
 
@@ -568,7 +562,7 @@ class DemoStatsView(TemplateView):
             'top_prodotti': top_prodotti,
             'top_supermercati': top_supermercati,
             'filtro_attuale': filtro,
-            'spese_giorno': list(spese),  # Assicurati che sia una lista
+            'spese_giorno': list(spese),  # una lista
             'numero_utenti_registrati': numero_utenti_registrati,
             'cache_timestamp': now()
         }
