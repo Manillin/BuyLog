@@ -28,11 +28,24 @@ class Negozio(models.Model):
         verbose_name_plural = 'Negozi'
 
 
-class Prodotto(models.Model):
-    nome = models.CharField(max_length=100)
+class Categoria(models.Model):
+    nome = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.nome
+
+    class Meta:
+        verbose_name_plural = 'Categorie'
+
+
+class Prodotto(models.Model):
+    nome = models.CharField(max_length=100)
+    categoria = models.ForeignKey(
+        Categoria, on_delete=models.SET_NULL, null=True, blank=True)
+    categoria_confermata = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.nome} ({self.categoria.nome if self.categoria else 'Non categorizzato'})"
 
     class Meta:
         verbose_name_plural = 'Prodotti'
@@ -95,3 +108,15 @@ class Profile(models.Model):
 @receiver(post_save, sender=ListaProdotti)
 def aggiorna_totale_scontrino(sender, instance, **kwargs):
     instance.scontrino.calcola_totale()
+
+
+class ProdottoConosciuto(models.Model):
+    nome_specifico = models.CharField(max_length=100, unique=True)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    data_aggiunta = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.nome_specifico} -> {self.categoria.nome}"
+
+    class Meta:
+        verbose_name_plural = 'ProdottiConosciuti'
