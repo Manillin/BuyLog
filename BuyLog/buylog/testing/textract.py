@@ -34,6 +34,7 @@ def analizza_scontrino_con_expense(file_path):
     info_generali = estrai_info_generali(response)
     print(
         f"Negozio: {info_generali.get('negozio')}, Data: {info_generali.get('data')}, Via: {info_generali.get('via')}")
+    return response
 
 
 def estrai_info_generali(response):
@@ -49,4 +50,39 @@ def estrai_info_generali(response):
     return info
 
 
-analizza_scontrino_con_expense('scontrino3.png')
+def estrai_dati_interessanti(response):
+    dati_interessanti = {}
+
+    for expense_doc in response['ExpenseDocuments']:
+        # Estrarre informazioni generali
+        for field in expense_doc['SummaryFields']:
+            tipo = field['Type']['Text']
+            valore = field['ValueDetection']['Text']
+            if tipo in ['VENDOR_NAME', 'RECEIPT_DATE', 'TOTAL']:
+                dati_interessanti[tipo] = valore
+
+        # Estrarre articoli e prezzi
+        articoli = []
+        for item in expense_doc['LineItemGroups']:
+            for line_item in item['LineItems']:
+                articolo = {}
+                for field in line_item['LineItemExpenseFields']:
+                    tipo = field['Type']['Text']
+                    valore = field['ValueDetection']['Text']
+                    if tipo in ['ITEM', 'PRICE']:
+                        articolo[tipo] = valore
+                if articolo:
+                    articoli.append(articolo)
+        dati_interessanti['Articoli'] = articoli
+
+    return dati_interessanti
+
+
+response = analizza_scontrino_con_expense('scontrino1.png')
+
+# Esempio di utilizzo
+print("\n\n -------------- \n\n")
+print("Response dict: \n")
+dati = estrai_dati_interessanti(response)
+for chiave, valore in dati.items():
+    print(f"{chiave}: {valore}")
