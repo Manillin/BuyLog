@@ -8,7 +8,12 @@ def categorizza_prodotto(nome_prodotto):
     prodotto_esistente = Prodotto.objects.filter(
         nome__iexact=nome_prodotto).first()
     if prodotto_esistente:
-        return prodotto_esistente.categoria, prodotto_esistente.categoria_confermata
+        if prodotto_esistente.categoria_confermata:
+            print(
+                f"Prodotto '{nome_prodotto}' trovato - categoria confermata: {prodotto_esistente.categoria.nome}")
+            return prodotto_esistente.categoria, True
+        print(
+            f"Prodotto '{nome_prodotto}' trovato - categoria non confermata, provo regex")
 
     # Se non esiste, prova con le regex
     patterns = {
@@ -21,9 +26,13 @@ def categorizza_prodotto(nome_prodotto):
     for categoria_nome, pattern in patterns.items():
         if re.search(pattern, nome_lower):
             categoria, _ = Categoria.objects.get_or_create(nome=categoria_nome)
+            print(
+                f"Categorizzazione con regex riuscita per '{nome_prodotto}': {categoria_nome}")
             return categoria, True  # Se fa match, la categoria è confermata
 
     # Se non trova match, restituisce la categoria 'altro'
+    print(
+        f"Categorizzazione con regex fallita per '{nome_prodotto}', assegno 'altro'")
     categoria, _ = Categoria.objects.get_or_create(nome='altro')
     return categoria, False
 
