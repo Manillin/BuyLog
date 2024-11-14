@@ -48,4 +48,11 @@ urlpatterns = [
     path('salva-scontrino-foto/', salva_scontrino_foto,
          name='salva_scontrino_foto'),
 
+    # Visualizzazione scontrini con categorie
+    path('aggiorna-categoria-prodotto/', aggiorna_categoria_prodotto,
+         name='aggiorna_categoria_prodotto'),
+    path('toggle-visualizzazione/<int:scontrino_id>/',
+         toggle_visualizzazione_categoria, name='toggle_visualizzazione'),
+
+
 ]
