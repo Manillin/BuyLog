@@ -71,3 +71,43 @@
     background-color: #f8f9fa;
     border-bottom: none;
 }
+
+/* Custom switch styles */
+.custom-control-input:checked~.custom-control-label::before {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+/* Categoria input styles */
+.categoria-input {
+    border-radius: 20px 0 0 20px !important;
+    border: 1px solid #ced4da;
+    padding: 0.375rem 0.75rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.categoria-input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Input group append button styles */
+.input-group-append .btn {
+    border-radius: 0 20px 20px 0 !important;
+    padding: 0.375rem 0.75rem;
+}
+
+.input-group-append .input-group-text.bg-success {
+    border-radius: 20px !important;
+    margin-left: 0.5rem;
+}
+
+/* Hover effects */
+.categoria-input:hover {
+    border-color: #80bdff;
+}
+
+.input-group-append .btn:hover {
+    background-color: #007bff;
+    color: white;
+}
