@@ -126,9 +126,13 @@ function initPagination(products, categories) {
     prodottiFoto = products.map(p => {
         const prezzoStr = p.prezzo.toString().replace(',', '.');
         const prezzoNum = parseFloat(prezzoStr);
+        const categoriaObj = categories.find(c => c.nome === p.categoria) ||
+            categories.find(c => c.nome === 'altro');
         return {
-            ...p,
-            prezzo: prezzoNum
+            nome: p.nome,
+            prezzo: prezzoNum,
+            quantita: p.quantita || 1,
+            categoria: categoriaObj ? categoriaObj.id : null
         };
     });
     data = { categorie: categories || [] };
@@ -162,7 +166,7 @@ function aggiornaTabellaFoto() {
                 <div class="d-flex align-items-center">
                     <select class="form-control categoria-select" onchange="modificaCategoriaFoto(${globalIndex}, this.value)">
                         ${data.categorie.map(cat => `
-                            <option value="${cat.id}" ${prodotto.categoria === cat.nome ? 'selected' : ''}>
+                            <option value="${cat.id}" ${prodotto.categoria === cat.id ? 'selected' : ''}>
                                 ${cat.nome}
                             </option>
                         `).join('')}
