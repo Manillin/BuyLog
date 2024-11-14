@@ -41,4 +41,11 @@ urlpatterns = [
          name='dettagli_prodotto'),
 
 
+    # Analisi scontrino tramite foto
+    path('analizza-scontrino/', analizza_scontrino,
+         name='analizza_scontrino'),
+    path('crea-categoria/', crea_categoria, name='crea_categoria'),
+    path('salva-scontrino-foto/', salva_scontrino_foto,
+         name='salva_scontrino_foto'),
+
 ]
