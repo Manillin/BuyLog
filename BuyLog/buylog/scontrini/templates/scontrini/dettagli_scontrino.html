@@ -1,40 +1,47 @@
-{% extends 'scontrini/base.html' %}
-
-{% block title %}Dettagli Scontrino{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container py-4">
     <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Dettagli Scontrino</h2>
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Dettagli Scontrino</h5>
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="toggleVisualizzazione" 
+                       data-scontrino-id="{{ scontrino.id }}" 
+                       {% if not scontrino.mostra_categoria %}checked{% endif %}>
+                <label class="custom-control-label text-white" for="toggleVisualizzazione">
+                    Mostra Prodotti
+                </label>
+            </div>
         </div>
+        
         <div class="card-body">
             <div class="row mb-4">
                 <div class="col-md-4">
                     <div class="d-flex align-items-center">
-                        <!-- controlla dimensione icone: fa-2x ; me-2 spaziatura -->
-                        <i class="fas fa-store fa-2x mr-2 text-primary"></i>
+                        <i class="fas fa-store fa-2x text-primary mr-3"></i>
                         <div>
-                            <h6 class="mb-0">Negozio</h6>
+                            <h6 class="text-muted mb-1">Negozio</h6>
                             <p class="mb-0">{{ scontrino.negozio.nome }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-calendar-alt fa-2x mr-3 text-primary"></i>
+                        <i class="far fa-calendar-alt fa-2x text-primary mr-3"></i>
                         <div>
-                            <h6 class="mb-0">Data</h6>
-                            <p class="mb-0">{{ scontrino.data|date:"d M Y" }}</p>
+                            <h6 class="text-muted mb-1">Data</h6>
+                            <p class="mb-0">{{ scontrino.data|date:"d/m/Y" }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-euro-sign fa-2x mr-3 text-primary"></i>
+                        <i class="fas fa-euro-sign fa-2x text-primary mr-3"></i>
                         <div>
-                            <h6 class="mb-0">Totale</h6>
-                            <p class="mb-0">{{ scontrino.totale|floatformat:2 }} €</p>
+                            <h6 class="text-muted mb-1">Totale</h6>
+                            <p class="mb-0">{{ scontrino.totale }} €</p>
                         </div>
                     </div>
                 </div>
@@ -42,22 +49,57 @@
 
             <h4 class="mb-3"><i class="fas fa-shopping-cart fa-1x mr-3"></i>Prodotti</h4>
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table">
                     <thead class="table-light">
                         <tr>
                             <th>Prodotto</th>
-                            <th>Quantità</th>
-                            <th>Prezzo Unitario</th>
-                            <th>Totale</th>
+                            <th>Categoria</th>
+                            <th class="text-center">Quantità</th>
+                            <th class="text-right">Prezzo Unitario</th>
+                            <th class="text-right">Totale</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for prodotto in prodotti %}
                         <tr>
-                            <td>{{ prodotto.prodotto.nome }}</td>
-                            <td>{{ prodotto.quantita }}</td>
-                            <td>{{ prodotto.prezzo_unitario|floatformat:2 }} €</td>
-                            <td>{{ prodotto.totale|floatformat:2 }} €</td>
+                            <td>
+                                {% if scontrino.mostra_categoria %}
+                                    {% if prodotto.categoria.nome == 'altro' %}
+                                        {{ prodotto.nome_display }}
+                                    {% else %}
+                                        {{ prodotto.categoria.nome }}
+                                    {% endif %}
+                                {% else %}
+                                    {{ prodotto.nome_display }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control form-control-rounded categoria-input" 
+                                           data-prodotto-id="{{ prodotto.prodotto_id }}"
+                                           value="{{ prodotto.categoria.nome }}"
+                                           list="categorie-list-{{ prodotto.id }}"
+                                           placeholder="Cerca categoria..."
+                                           autocomplete="off"
+                                           style="border-radius: 20px 0 0 20px;">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" 
+                                                onclick="confermaCategoriaClick(this)"
+                                                style="border-radius: 0 20px 20px 0;">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+                                    <datalist id="categorie-list-{{ prodotto.id }}">
+                                        {% for categoria in categorie %}
+                                            <option value="{{ categoria.nome }}">
+                                        {% endfor %}
+                                    </datalist>
+                                </div>
+                            </td>
+                            <td class="text-center">{{ prodotto.quantita }}</td>
+                            <td class="text-right">{{ prodotto.prezzo_unitario }} €</td>
+                            <td class="text-right">{{ prodotto.totale }} €</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -124,3 +166,9 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'scontrini/js/dettagli_scontrino.js' %}"></script>
+{% endblock %}
+
+<link rel="stylesheet" href="{% static 'scontrini/css/style.css' %}">
