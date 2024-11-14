@@ -77,9 +77,18 @@ def carica_scontrino(request):
             # Salva i prodotti
             prodotti_list = json.loads(prodotti_json)
             for prodotto_data in prodotti_list:
-                prodotto, _ = Prodotto.objects.get_or_create(
-                    nome=prodotto_data['nome']
-                )
+                nome_prodotto = prodotto_data['nome']
+
+                # Cerca o crea il prodotto
+                prodotto = Prodotto.objects.filter(nome=nome_prodotto).first()
+                if not prodotto:
+                    prodotto = Prodotto.objects.create(nome=nome_prodotto)
+                    # Se il prodotto è nuovo, assegna categoria 'altro'
+                    categoria_altro, _ = Categoria.objects.get_or_create(
+                        nome='altro')
+                    prodotto.categoria = categoria_altro
+                    prodotto.save()
+
                 ListaProdotti.objects.create(
                     scontrino=scontrino,
                     prodotto=prodotto,
@@ -153,13 +162,36 @@ def lista_scontrini(request):
 def dettagli_scontrino(request, scontrino_id):
     scontrino = get_object_or_404(
         Scontrino, id=scontrino_id, utente=request.user)
-    prodotti_list = scontrino.prodotti.all()
+    if not hasattr(scontrino, 'mostra_categoria'):
+        scontrino.mostra_categoria = True  # Default: mostra categorie
+        scontrino.save()
 
-    # Calcoliamo il totale per ogni prodotto
-    for prodotto in prodotti_list:
-        prodotto.totale = prodotto.prezzo_unitario * prodotto.quantita
+    lista_prodotti = scontrino.prodotti.all()
 
-    paginator = Paginator(prodotti_list, 10)
+    # Prepara i dati dei prodotti con informazioni aggiuntive
+    prodotti_elaborati = []
+    for lista_item in lista_prodotti:
+        prodotto = lista_item.prodotto  # Otteniamo il riferimento al Prodotto
+
+        prodotto_info = {
+            'id': lista_item.id,
+            'prodotto_id': lista_item.prodotto.id,
+            'nome_completo': prodotto.nome,
+            'nome_display': prodotto.categoria.nome if (scontrino.mostra_categoria and
+                                                        prodotto.categoria and
+                                                        prodotto.categoria.nome != 'altro' and
+                                                        prodotto.categoria_confermata)
+            else prodotto.nome,
+            'categoria': prodotto.categoria,
+            'categoria_confermata': prodotto.categoria_confermata,
+            'quantita': lista_item.quantita,
+            'prezzo_unitario': lista_item.prezzo_unitario,
+            'totale': lista_item.prezzo_unitario * lista_item.quantita
+        }
+        prodotti_elaborati.append(prodotto_info)
+
+    # Paginazione
+    paginator = Paginator(prodotti_elaborati, 10)
     page = request.GET.get('page', 1)
 
     try:
@@ -167,9 +199,13 @@ def dettagli_scontrino(request, scontrino_id):
     except:
         prodotti = paginator.page(1)
 
+    # Ottieni tutte le categorie per il form di modifica
+    categorie = Categoria.objects.all()
+
     return render(request, 'scontrini/dettagli_scontrino.html', {
         'scontrino': scontrino,
-        'prodotti': prodotti
+        'prodotti': prodotti,
+        'categorie': categorie
     })
 
 
@@ -719,22 +755,36 @@ def analizza_scontrino(request):
 
             # Processa i prodotti prima di inviarli
             prodotti_processati = []
-            for prodotto, prezzo in zip(dati_scontrino['prodotti'], dati_scontrino['prezzi']):
-                prodotto_esistente = Prodotto.objects.filter(
-                    nome__iexact=prodotto).first()
+            for idx, nome_prodotto in enumerate(dati_scontrino['prodotti']):
+                # Cerca prodotto esistente
+                prodotto = Prodotto.objects.filter(
+                    nome__iexact=nome_prodotto).first()
 
-                if prodotto_esistente and prodotto_esistente.categoria_confermata:
-                    categoria = prodotto_esistente.categoria
-                    categoria_confermata = True
+                if prodotto:
+                    if prodotto.categoria_confermata:
+                        print(
+                            f"Prodotto esistente '{nome_prodotto}' - usando categoria confermata: {prodotto.categoria.nome}")
+                    else:
+                        print(
+                            f"Prodotto esistente '{nome_prodotto}' - categoria non confermata, provo categorizzazione")
+                        categoria, confermata = categorizza_prodotto(
+                            nome_prodotto)
+                        prodotto.categoria = categoria
+                        prodotto.save()
                 else:
-                    categoria, _ = categorizza_prodotto(prodotto)
-                    categoria_confermata = False
+                    print(
+                        f"Nuovo prodotto '{nome_prodotto}' - creo e categorizzo")
+                    categoria, confermata = categorizza_prodotto(nome_prodotto)
+                    prodotto = Prodotto.objects.create(
+                        nome=nome_prodotto,
+                        categoria=categoria,
+                        categoria_confermata=confermata
+                    )
 
                 prodotti_processati.append({
-                    'nome': prodotto,
-                    'prezzo': prezzo,
-                    'categoria': categoria.id if categoria else None,
-                    'categoria_confermata': categoria_confermata
+                    'nome': prodotto.nome,
+                    'categoria': prodotto.categoria.nome,
+                    'prezzo': dati_scontrino['prezzi'][idx] if idx < len(dati_scontrino['prezzi']) else 0
                 })
 
             categorie = list(Categoria.objects.values('id', 'nome'))
@@ -806,7 +856,7 @@ def crea_categoria(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            nome_categoria = data.get('nome')
+            nome_categoria = data.get('nome', '').lower().strip()
 
             if not nome_categoria:
                 return JsonResponse({
@@ -814,10 +864,11 @@ def crea_categoria(request):
                     'error': 'Nome categoria richiesto'
                 })
 
-            # Crea la categoria se non esiste
-            categoria, created = Categoria.objects.get_or_create(
-                nome=nome_categoria.lower()
-            )
+            # Cerca prima la categoria esistente (case-insensitive)
+            categoria = Categoria.objects.filter(
+                nome__iexact=nome_categoria).first()
+            if not categoria:
+                categoria = Categoria.objects.create(nome=nome_categoria)
 
             return JsonResponse({
                 'success': True,
@@ -835,3 +886,57 @@ def crea_categoria(request):
         'success': False,
         'error': 'Metodo non permesso'
     })
+
+
+@login_required
+def aggiorna_categoria_prodotto(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            prodotto_id = data.get('prodotto_id')
+            categoria_id = data.get('categoria_id')
+
+            prodotto = get_object_or_404(Prodotto, id=prodotto_id)
+            categoria = get_object_or_404(Categoria, id=categoria_id)
+
+            prodotto.categoria = categoria
+            prodotto.categoria_confermata = True
+            prodotto.save()
+            print(
+                f"{prodotto.nome} salvato con categoria {prodotto.categoria} ed è: {prodotto.categoria_confermata}")
+
+            print(
+                f"Aggiornata categoria per '{prodotto.nome}' a '{categoria.nome}' (confermata > agg_cat_prod)")
+
+            return JsonResponse({
+                'success': True,
+                'categoria_nome': categoria.nome
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': 'ayy: ' + str(e)
+            })
+    return JsonResponse({'success': False, 'error': 'Metodo non permesso'})
+
+
+@login_required
+def toggle_visualizzazione_categoria(request, scontrino_id):
+    if request.method == 'POST':
+        try:
+            scontrino = get_object_or_404(
+                Scontrino, id=scontrino_id, utente=request.user)
+            scontrino.mostra_categoria = not scontrino.mostra_categoria
+            scontrino.save()
+
+            # Forza il refresh della pagina
+            return JsonResponse({
+                'success': True,
+                'mostra_categoria': scontrino.mostra_categoria
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    return JsonResponse({'success': False, 'error': 'Metodo non permesso'})
