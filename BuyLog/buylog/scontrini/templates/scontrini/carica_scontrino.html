@@ -8,35 +8,68 @@
             <div class="card shadow-sm">
                 <div class="card-body p-5">
                     <h3 class="mb-4">Carica Scontrino</h3>
+
+                    <!-- Toggle buttons -->
+                    <div class="btn-group w-100 mb-4">
+                        <button type="button" class="btn btn-primary active" id="btn-manuale">Inserimento Manuale</button>
+                        <button type="button" class="btn btn-primary" id="btn-foto">Carica Foto</button>
+                    </div>
                     
                     <!-- Messaggi di errore -->
                     <div id="error-message" class="alert alert-warning d-none"></div>
                     
-                    <form id="scontrino-form" method="POST">
-                        {% csrf_token %}
-                        <div class="form-group mb-3">
-                            <label class="small text-muted">Data</label>
-                            <input type="text" class="form-control datepicker" id="id_data" name="data" required>
-                        </div>
-                        <div class="form-group mb-4">
-                            <label class="small text-muted">Nome Negozio</label>
-                            <input type="text" class="form-control" id="id_negozio_nome" name="negozio_nome" required>
-                        </div>
-                        
-                        <div class="text-right mb-4">
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#gestioneProdottiModal">
-                                <i class="fas fa-plus mr-2"></i>Gestisci Prodotti
-                            </button>
-                        </div>
-                        
-                        <input type="hidden" id="prodotti_count" name="prodotti_count" value="0">
-                        
-                        <div class="text-right">
-                            <button type="submit" class="btn btn-success" id="salva_scontrino_button" disabled>
-                                <i class="fas fa-save mr-2"></i>Salva Scontrino
-                            </button>
-                        </div>
-                    </form>
+                    <!-- Form Manuale (esistente) -->
+                    <div id="form-manuale">
+                        <form id="scontrino-form" method="POST">
+                            {% csrf_token %}
+                            <div class="form-group mb-3">
+                                <label class="small text-muted">Data</label>
+                                <input type="text" class="form-control datepicker" id="id_data" name="data" required>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="small text-muted">Nome Negozio</label>
+                                <input type="text" class="form-control" id="id_negozio_nome" name="negozio_nome" required>
+                            </div>
+                            
+                            <div class="text-right mb-4">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#gestioneProdottiModal">
+                                    <i class="fas fa-plus mr-2"></i>Gestisci Prodotti
+                                </button>
+                            </div>
+                            
+                            <input type="hidden" id="prodotti_count" name="prodotti_count" value="0">
+                            
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-success" id="salva_scontrino_button" disabled>
+                                    <i class="fas fa-save mr-2"></i>Salva Scontrino
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Form Foto (nuovo) -->
+                    <div id="form-foto" style="display: none;">
+                        <form id="foto-form" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group mb-3">
+                                <label class="small text-muted">Data</label>
+                                <input type="text" class="form-control datepicker" id="id_data_foto" name="data" required>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="small text-muted">Nome Negozio</label>
+                                <input type="text" class="form-control" id="id_negozio_nome_foto" name="negozio_nome" required>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label class="small text-muted">Foto Scontrino</label>
+                                <input type="file" class="form-control-file" id="scontrino_foto" name="scontrino_foto" accept="image/*" required>
+                            </div>
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-camera mr-2"></i>Analizza Scontrino
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -44,12 +77,21 @@
 </div>
 
 {% include 'scontrini/partials/modale_prodotti.html' %}
+{% include 'scontrini/partials/modale_prodotti_foto.html' %}
 
-<!-- Scripts -->
+{% endblock %}
+
+{% block extra_js %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
+
+<script>
+    const CATEGORIE = {{ categorie_json|safe }};
+</script>
+
 <script src="{% static 'scontrini/js/gestione_scontrino.js' %}"></script>
+<script src="{% static 'scontrini/js/carica_scontrino_foto.js' %}"></script>
 <script>
     flatpickr(".datepicker", {
         locale: "it",
@@ -60,4 +102,5 @@
         disableMobile: true
     });
 </script>
+
 {% endblock %}

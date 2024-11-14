@@ -1,0 +1,62 @@
+<div class="modal fade" id="gestioneProdottiFotoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Gestione Prodotti da Scontrino</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table" id="tabella-prodotti-foto">
+                        <thead>
+                            <tr>
+                                <th>Prodotto</th>
+                                <th class="text-center">Quantità</th>
+                                <th class="text-right">Prezzo</th>
+                                <th>Categoria</th>
+                                <th class="text-right">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prodotti-foto-list"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-right">
+                                    <strong>Totale:</strong>
+                                </td>
+                                <td class="text-right" colspan="2">
+                                    <strong id="totale_scontrino_foto">0.00 €</strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <nav>
+                        <ul class="pagination justify-content-center" id="paginazione-prodotti"></ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-success" id="salvaProdottiFotoButton">Conferma Prodotti</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="nuovaCategoriaModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Nuova Categoria</h5>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="nuova-categoria-nome">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-success" id="salva-categoria">Salva</button>
+            </div>
+        </div>
+    </div>
+</div>

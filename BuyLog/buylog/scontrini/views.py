@@ -20,12 +20,14 @@ from django.template.loader import render_to_string
 from .cache_monitor import CacheMonitor
 from django.core.paginator import Paginator
 import json
-
+from django.core.files.storage import FileSystemStorage
+from .utils import *
+from django.core import serializers
 
 # Create your views here.
 
 
-@login_required  
+@login_required
 def stats(request):
     return render(request, template_name='scontrini/stats.html', context={'message': 'User logged!'})
 
@@ -91,8 +93,12 @@ def carica_scontrino(request):
         except (json.JSONDecodeError, KeyError, ValueError) as e:
             messages.error(request, 'Errore nel formato dei dati')
             return redirect('scontrini:carica_scontrino')
-
-    return render(request, 'scontrini/carica_scontrino.html')
+    categorie = Categoria.objects.all()
+    context = {
+        'categorie': categorie,
+        'categorie_json': json.dumps(list(categorie.values('id', 'nome')))
+    }
+    return render(request, 'scontrini/carica_scontrino.html', context)
 
 
 # Handler della richiesta AJAX mandata da js per aggiungere un prodotto alla sessione
@@ -697,3 +703,135 @@ class DettagliProdottoView(LoginRequiredMixin, DetailView):
 
         context['filtro_attuale'] = filtro
         return context
+
+
+@login_required
+def analizza_scontrino(request):
+    if request.method == 'POST' and request.FILES.get('scontrino_foto'):
+        try:
+            temp_file = request.FILES['scontrino_foto']
+            fs = FileSystemStorage(location='temp_receipts/')
+            filename = fs.save(temp_file.name, temp_file)
+            file_path = fs.path(filename)
+
+            dati_scontrino = estrai_dati_scontrino(file_path)
+            fs.delete(filename)
+
+            # Processa i prodotti prima di inviarli
+            prodotti_processati = []
+            for prodotto, prezzo in zip(dati_scontrino['prodotti'], dati_scontrino['prezzi']):
+                prodotto_esistente = Prodotto.objects.filter(
+                    nome__iexact=prodotto).first()
+
+                if prodotto_esistente and prodotto_esistente.categoria_confermata:
+                    categoria = prodotto_esistente.categoria
+                    categoria_confermata = True
+                else:
+                    categoria, _ = categorizza_prodotto(prodotto)
+                    categoria_confermata = False
+
+                prodotti_processati.append({
+                    'nome': prodotto,
+                    'prezzo': prezzo,
+                    'categoria': categoria.id if categoria else None,
+                    'categoria_confermata': categoria_confermata
+                })
+
+            categorie = list(Categoria.objects.values('id', 'nome'))
+
+            return JsonResponse({
+                'success': True,
+                'prodotti': prodotti_processati,
+                'totale': dati_scontrino['totale'],
+                'categorie': categorie
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+
+
+@login_required
+def salva_scontrino_foto(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            data_scontrino = data.get('data')
+            negozio_nome = data.get('negozio')
+            prodotti = data.get('prodotti', [])
+            totale = sum(float(p['prezzo']) *
+                         float(p.get('quantita', 1)) for p in prodotti)
+
+            # Crea o recupera il negozio
+            negozio = Negozio.objects.get_or_create(nome=negozio_nome)[0]
+
+            # Crea lo scontrino
+            scontrino = Scontrino.objects.create(
+                data=data_scontrino,
+                negozio=negozio,
+                utente=request.user,
+                totale=totale
+            )
+
+            # Salva i prodotti
+            for prod in prodotti:
+                categoria = Categoria.objects.get(id=prod['categoria'])
+                prodotto = Prodotto.objects.get_or_create(
+                    nome=prod['nome'],
+                    defaults={'categoria': categoria}
+                )[0]
+
+                ListaProdotti.objects.create(
+                    scontrino=scontrino,
+                    prodotto=prodotto,
+                    quantita=prod.get('quantita', 1),
+                    prezzo_unitario=prod['prezzo']
+                )
+
+            return JsonResponse({'success': True})
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+
+    return JsonResponse({'success': False, 'error': 'Metodo non permesso'})
+
+
+@login_required
+def crea_categoria(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            nome_categoria = data.get('nome')
+
+            if not nome_categoria:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Nome categoria richiesto'
+                })
+
+            # Crea la categoria se non esiste
+            categoria, created = Categoria.objects.get_or_create(
+                nome=nome_categoria.lower()
+            )
+
+            return JsonResponse({
+                'success': True,
+                'categoria_id': categoria.id,
+                'categoria_nome': categoria.nome
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Dati non validi'
+            })
+
+    return JsonResponse({
+        'success': False,
+        'error': 'Metodo non permesso'
+    })
