@@ -56,7 +56,10 @@ class Scontrino(models.Model):
     negozio = models.ForeignKey(Negozio, on_delete=models.CASCADE)
     data = models.DateTimeField()
     totale = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00)  # Aggiungi questo campo
+        max_digits=10, decimal_places=2, default=0.00)
+
+    # serve per la visualizzazione dello scontrino in formato NOME_PRODOTTO | CATEGORIA (per il toggle nel form)
+    mostra_categoria = models.BooleanField(default=True)
 
     def __str__(self):
         return f'Acquisto in: {self.negozio.nome} del {self.data}'
@@ -108,15 +111,3 @@ class Profile(models.Model):
 @receiver(post_save, sender=ListaProdotti)
 def aggiorna_totale_scontrino(sender, instance, **kwargs):
     instance.scontrino.calcola_totale()
-
-
-class ProdottoConosciuto(models.Model):
-    nome_specifico = models.CharField(max_length=100, unique=True)
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    data_aggiunta = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.nome_specifico} -> {self.categoria.nome}"
-
-    class Meta:
-        verbose_name_plural = 'ProdottiConosciuti'
