@@ -65,6 +65,6 @@ def stampa_dati_scontrino(dati_scontrino):
 
 
 # Esempio di utilizzo
-dati_scontrino = estrai_dati_scontrino('scontrino4.png')
+dati_scontrino = estrai_dati_scontrino('scontrino1.png')
 
 stampa_dati_scontrino(dati_scontrino)
