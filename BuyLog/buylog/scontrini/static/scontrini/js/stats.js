@@ -85,11 +85,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('totale-speso').textContent = `${parseFloat(data.totale_speso).toFixed(2)} €`;
                 document.getElementById('numero-articoli').textContent = data.numero_articoli;
 
-                // Aggiorna i top prodotti
+                // Aggiorna i top prodotti (ora mostra le categorie ma mantiene lo stesso ID per compatibilità)
                 var topProdottiTable = document.getElementById('top-prodotti');
                 topProdottiTable.innerHTML = '';
-                data.top_prodotti.forEach(function (prodotto) {
-                    var row = `<tr><td>${prodotto.prodotto__nome}</td><td>${prodotto.total_ordinato}</td></tr>`;
+                data.top_categorie.forEach(function (categoria) {  // Cambiato da top_prodotti a top_categorie
+                    var row = `<tr>
+                        <td>${categoria.prodotto__categoria__nome}</td>
+                        <td>${categoria.total_ordinato}</td>
+                        <td>${parseFloat(categoria.totale_speso).toFixed(2)} €</td>
+                    </tr>`;
                     topProdottiTable.innerHTML += row;
                 });
 
