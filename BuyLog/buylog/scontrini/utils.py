@@ -56,8 +56,8 @@ def estrai_dati_scontrino(file_path):
         for field in expense_doc['SummaryFields']:
             tipo = field['Type']['Text']
             valore = field['ValueDetection']['Text']
-            if tipo == 'TOTAL':
-                dati['totale'] = valore
+            # if tipo == 'TOTAL':
+            #     dati['totale'] = valore
 
         # Estrarre articoli e prezzi
         for item in expense_doc['LineItemGroups']:
