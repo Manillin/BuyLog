@@ -54,5 +54,9 @@ urlpatterns = [
     path('toggle-visualizzazione/<int:scontrino_id>/',
          toggle_visualizzazione_categoria, name='toggle_visualizzazione'),
 
+    # Visualizzazione per categorie
+    path('categoria/<int:pk>/', DettagliCategoriaView.as_view(),
+         name='dettagli_categoria'),
+    path('tutte_categorie/', TutteCategorieView.as_view(), name=''),
 
 ]
