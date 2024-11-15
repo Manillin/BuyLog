@@ -71,10 +71,26 @@ def estrai_dati_scontrino(file_path):
                         dati['prezzi'].append(valore)
 
     # Validazione prezzi
-    dati['prezzi'] = [float(prezzo.replace(',', '.'))
-                      for prezzo in dati['prezzi']]
+    prezzi_puliti = []
+    for prezzo in dati['prezzi']:
+        prezzo_str = str(prezzo).replace(' ', '').strip()
+        print(f"prezzo - {prezzo_str} ")
+        # Gestisce il caso di punti multipli
+        prezzo_str = (prezzo_str
+                      # Prima sostituiamo le virgole con punti
+                      .replace(',', '.')
+                      .replace(' ', '')   # Rimuoviamo gli spazi
+                      .replace('..', '.')  # Gestiamo doppi punti
+                      .replace('. .', '.')  # Gestiamo punto spazio punto
+                      .replace(',.', '.'))  # Gestiamo virgola punto
+
+        print(f"prezzo dopo pulizia - {prezzo_str}")
+        prezzi_puliti.append(float(prezzo_str))
+
+    dati['prezzi'] = prezzi_puliti
+
     if dati['totale']:
-        dati['totale'] = float(dati['totale'].replace(',', '.'))
+        dati['totale'] = float(str(dati['totale']).replace(',', '.'))
 
     return dati
 
