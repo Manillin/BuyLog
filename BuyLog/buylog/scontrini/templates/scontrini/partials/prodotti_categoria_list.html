@@ -1,0 +1,44 @@
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Nome Prodotto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prodotto in prodotti %}
+            <tr>
+                <td>
+                    <a href="{% url 'scontrini:dettagli_prodotto' pk=prodotto.prodotto__id %}" class="text-primary">
+                        {{ prodotto.prodotto__nome }}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if prodotti.has_other_pages %}
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if prodotti.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="#" data-page="{{ prodotti.previous_page_number }}">&laquo;</a>
+            </li>
+        {% endif %}
+        
+        {% for i in prodotti.paginator.page_range %}
+            <li class="page-item {% if prodotti.number == i %}active{% endif %}">
+                <a class="page-link" href="#" data-page="{{ i }}">{{ i }}</a>
+            </li>
+        {% endfor %}
+        
+        {% if prodotti.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="#" data-page="{{ prodotti.next_page_number }}">&raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

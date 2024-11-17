@@ -85,20 +85,22 @@
         <div class="col-md-6 mb-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-primary">Top Prodotti</h5>
+                    <h5 class="card-title text-primary">Top Categorie</h5>
                     <div class="table-responsive mb-3">
                         <table class="table table-hover">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Prodotto</th>
+                                    <th>Categoria</th>
                                     <th>Quantità</th>
+                                    <th>Totale €</th>
                                 </tr>
                             </thead>
                             <tbody id="top-prodotti">
-                                {% for prodotto in top_prodotti %}
+                                {% for categoria in top_categorie %}
                                 <tr>
-                                    <td>{{ prodotto.prodotto__nome }}</td>
-                                    <td>{{ prodotto.total_ordinato }}</td>
+                                    <td>{{ categoria.prodotto__categoria__nome }}</td>
+                                    <td>{{ categoria.total_ordinato }}</td>
+                                    <td>{{ categoria.totale_speso|floatformat:2 }} €</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
