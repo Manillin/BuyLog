@@ -1003,6 +1003,14 @@ class DettagliCategoriaView(LoginRequiredMixin, DetailView):
                                    context['quantita_totale']) if context['quantita_totale'] > 0 else 0
         context['numero_supermercati'] = lista_prodotti.values(
             'scontrino__negozio').distinct().count()
+        context['prezzo_piu_caro'] = lista_prodotti.aggregate(
+            Max('prezzo_unitario'))['prezzo_unitario__max'] or 0
+        context['prezzo_piu_economico'] = lista_prodotti.aggregate(
+            Min('prezzo_unitario'))['prezzo_unitario__min'] or 0
+        context['prima_volta_acquistato'] = lista_prodotti.aggregate(
+            Min('scontrino__data'))['scontrino__data__min']
+        context['ultima_volta_acquistato'] = lista_prodotti.aggregate(
+            Max('scontrino__data'))['scontrino__data__max']
 
         return context
 
@@ -1070,3 +1078,105 @@ class TutteCategorieView(LoginRequiredMixin, TemplateView):
             return Scontrino.objects.filter(data__gte=now()-timedelta(days=365), utente=user)
         else:
             return Scontrino.objects.filter(utente=user)
+
+
+@login_required
+def aggiorna_tabella_categorie(request):
+    filtro = request.GET.get('filtro', 'all_time')
+    ordine = request.GET.get('ordine', '-quantita_totale')
+    page = request.GET.get('page', 1)
+    user = request.user
+
+    # Ottieni gli scontrini filtrati
+    if filtro == '1mese':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=30), utente=user)
+    elif filtro == '6mesi':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=180), utente=user)
+    elif filtro == '1anno':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=365), utente=user)
+    else:
+        scontrini = Scontrino.objects.filter(utente=user)
+
+    # Query per le statistiche delle categorie
+    categorie = ListaProdotti.objects.filter(
+        scontrino__in=scontrini
+    ).values(
+        'prodotto__categoria__nome',
+        'prodotto__categoria__id'
+    ).annotate(
+        quantita_totale=Sum('quantita'),
+        totale_speso=Sum(ExpressionWrapper(
+            F('prezzo_unitario') * F('quantita'),
+            output_field=FloatField()
+        )),
+        numero_prodotti=Count('prodotto', distinct=True),
+        prezzo_medio=ExpressionWrapper(
+            Sum(F('prezzo_unitario') * F('quantita')) / Sum('quantita'),
+            output_field=FloatField()
+        )
+    ).exclude(
+        prodotto__categoria__isnull=True
+    )
+
+    # Applica l'ordinamento
+    if ordine == '-quantita_totale':
+        categorie = categorie.order_by('-quantita_totale')
+    elif ordine == '-totale_speso':
+        categorie = categorie.order_by('-totale_speso')
+    elif ordine == '-numero_prodotti':
+        categorie = categorie.order_by('-numero_prodotti')
+    elif ordine == 'nome':
+        categorie = categorie.order_by('prodotto__categoria__nome')
+
+    # Paginazione
+    # stesso numero per pagina di tutti_prodotti
+    paginator = Paginator(list(categorie), 15)
+    categorie_paginate = paginator.get_page(page)
+
+    # Renderizza il template parziale corretto
+    html = render_to_string('scontrini/partials/categorie_list.html', {
+        'categorie': categorie_paginate,
+        'filtro_attuale': filtro,
+        'ordine_attuale': ordine
+    })
+
+    # Renderizza la paginazione
+    pagination_html = render_to_string('scontrini/partials/pagination.html', {
+        'categorie': categorie_paginate,  # Nota: cambiato da supermercati a categorie
+        'filtro_attuale': filtro,
+        'ordine_attuale': ordine
+    })
+
+    return JsonResponse({
+        'html': html,
+        'pagination': pagination_html
+    })
+
+
+# visualizzare tutti i prodotti che appartengono ad una categoria
+@login_required
+def prodotti_categoria(request, categoria_id):
+    page = request.GET.get('page', 1)
+    categoria = get_object_or_404(Categoria, id=categoria_id)
+
+    prodotti = ListaProdotti.objects.filter(
+        scontrino__utente=request.user,
+        prodotto__categoria=categoria
+    ).values(
+        'prodotto__id',
+        'prodotto__nome'
+    ).distinct().order_by('prodotto__nome')
+
+    paginator = Paginator(list(prodotti), 15)
+    prodotti_paginati = paginator.get_page(page)
+
+    html = render_to_string('scontrini/partials/prodotti_categoria_list.html', {
+        'prodotti': prodotti_paginati
+    })
+
+    return JsonResponse({
+        'html': html
+    })
