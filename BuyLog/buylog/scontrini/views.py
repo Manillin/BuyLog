@@ -41,6 +41,7 @@ class ScontriniLandingView(CreateView):
 def carica_scontrino(request):
     if request.method == 'POST':
         try:
+            # strip paramentri fondamentali per costruzione scontrino
             data = request.POST.get('data')
             negozio_nome = request.POST.get('negozio_nome').strip()
             prodotti_json = request.POST.get('prodotti_json')
@@ -49,7 +50,7 @@ def carica_scontrino(request):
                 messages.error(request, 'Tutti i campi sono obbligatori')
                 return redirect('scontrini:carica_scontrino')
 
-            # Valida i prodotti
+            # Valida i prodotti e deserializza il json in un oggetto python
             prodotti_list = json.loads(prodotti_json)
             for prodotto in prodotti_list:
                 if int(prodotto['quantita']) <= 0:
@@ -74,14 +75,17 @@ def carica_scontrino(request):
                 totale=float(request.POST.get('totale', 0))
             )
 
-            # Salva i prodotti
+            # Gestisce i prodotti nel DB (retrieve o creazione)
+            # TODO: possibile togliere overhead di json.loads in quanto prodotti list è gia obj python
             prodotti_list = json.loads(prodotti_json)
             for prodotto_data in prodotti_list:
+                # TODO: controlla la struttura del prodotto_data, come mai accedo al nome prodotto_data[nome] ?
                 nome_prodotto = prodotto_data['nome']
 
                 # Cerca o crea il prodotto
                 prodotto = Prodotto.objects.filter(nome=nome_prodotto).first()
                 if not prodotto:
+                    # creo nuovo prodotto
                     prodotto = Prodotto.objects.create(nome=nome_prodotto)
                     # Se il prodotto è nuovo, assegna categoria 'altro'
                     categoria_altro, _ = Categoria.objects.get_or_create(
@@ -89,6 +93,7 @@ def carica_scontrino(request):
                     prodotto.categoria = categoria_altro
                     prodotto.save()
 
+                # creazione di una ListaProdotti dedicata per ogni prodotto dello scontrino, l'id scontrino rimane lo stesso
                 ListaProdotti.objects.create(
                     scontrino=scontrino,
                     prodotto=prodotto,
@@ -96,18 +101,22 @@ def carica_scontrino(request):
                     prezzo_unitario=float(prodotto_data['prezzo'])
                 )
 
+            # salvati tutti i prodotti == salvato lo scontrino con successo!
             messages.success(request, 'Scontrino salvato con successo')
             return redirect('scontrini:successo')
 
         except (json.JSONDecodeError, KeyError, ValueError) as e:
-            messages.error(request, 'Errore nel formato dei dati')
+            messages.error(request, 'Errore (JSON) nel formato dei dati')
             return redirect('scontrini:carica_scontrino')
+
+    # caso richiesta GET
+    # TODO: Categoria.objects.all() mi carica tutte le categoria per il form ?
     categorie = Categoria.objects.all()
     context = {
         'categorie': categorie,
         'categorie_json': json.dumps(list(categorie.values('id', 'nome')))
     }
-    return render(request, 'scontrini/carica_scontrino.html', context)
+    return render(request, 'scontrini/.html', context)
 
 
 # Handler della richiesta AJAX mandata da js per aggiungere un prodotto alla sessione
@@ -907,6 +916,7 @@ def crea_categoria(request):
 def aggiorna_categoria_prodotto(request):
     if request.method == 'POST':
         try:
+            # TODO: capire request.body
             data = json.loads(request.body)
             prodotto_id = data.get('prodotto_id')
             categoria_id = data.get('categoria_id')
