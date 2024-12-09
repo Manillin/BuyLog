@@ -1,0 +1,26 @@
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th><a href="#" class="text-primary ordine-link" data-ordine="nome">Categoria</a></th>
+            <th><a href="#" class="text-primary ordine-link" data-ordine="-numero_prodotti">N° Prodotti</a></th>
+            <th><a href="#" class="text-primary ordine-link" data-ordine="-quantita_totale">Quantità Totale</a></th>
+            <th><a href="#" class="text-primary ordine-link" data-ordine="-totale_speso">Totale Speso</a></th>
+            <th><a href="#" class="text-primary ordine-link" data-ordine="-prezzo_medio">Prezzo Medio</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for categoria in categorie %}
+        <tr>
+            <td>
+                <a href="{% url 'scontrini:dettagli_categoria' pk=categoria.prodotto__categoria__id %}" class="text-primary">
+                    {{ categoria.prodotto__categoria__nome }}
+                </a>
+            </td>
+            <td>{{ categoria.numero_prodotti }}</td>
+            <td>{{ categoria.quantita_totale }}</td>
+            <td>{{ categoria.totale_speso|floatformat:2 }} €</td>
+            <td>{{ categoria.prezzo_medio|floatformat:2 }} €</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

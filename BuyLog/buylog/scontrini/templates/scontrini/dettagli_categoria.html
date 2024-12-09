@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h2>Dettagli Categoria: {{ categoria.nome }}</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Quantità ordinata</th>
+                        <td>{{ quantita_totale }}</td>
+                    </tr>
+                    <tr>
+                        <th>Prodotti nella categoria</th>
+                        <td>
+                            <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#prodottiModal">
+                                Visualizza prodotti ({{ numero_prodotti }})
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Costo totale</th>
+                        <td>{{ totale_speso|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Costo medio</th>
+                        <td>{{ prezzo_medio|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Acquistato in quanti diversi negozi</th>
+                        <td>{{ numero_supermercati }}</td>
+                    </tr>
+                    <tr>
+                        <th>Prezzo più caro</th>
+                        <td>{{ prezzo_piu_caro|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Prezzo più economico</th>
+                        <td>{{ prezzo_piu_economico|floatformat:2 }} €</td>
+                    </tr>
+                    <tr>
+                        <th>Prima volta acquistato</th>
+                        <td>{{ prima_volta_acquistato|date:"M d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Ultima volta acquistato</th>
+                        <td>{{ ultima_volta_acquistato|date:"M d, Y" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Prodotti -->
+<div class="modal fade" id="prodottiModal" tabindex="-1" aria-labelledby="prodottiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="prodottiModalLabel">Prodotti in {{ categoria.nome }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="prodottiTable">
+                    <!-- La tabella verrà caricata qui dinamicamente -->
+                </div>
+                <div id="paginationContainer" class="d-flex justify-content-center mt-3">
+                    <!-- La paginazione verrà caricata qui dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

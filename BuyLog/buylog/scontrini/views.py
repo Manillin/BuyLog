@@ -41,6 +41,7 @@ class ScontriniLandingView(CreateView):
 def carica_scontrino(request):
     if request.method == 'POST':
         try:
+            # strip paramentri fondamentali per costruzione scontrino
             data = request.POST.get('data')
             negozio_nome = request.POST.get('negozio_nome').strip()
             prodotti_json = request.POST.get('prodotti_json')
@@ -49,7 +50,7 @@ def carica_scontrino(request):
                 messages.error(request, 'Tutti i campi sono obbligatori')
                 return redirect('scontrini:carica_scontrino')
 
-            # Valida i prodotti
+            # Valida i prodotti e deserializza il json in un oggetto python
             prodotti_list = json.loads(prodotti_json)
             for prodotto in prodotti_list:
                 if int(prodotto['quantita']) <= 0:
@@ -74,14 +75,17 @@ def carica_scontrino(request):
                 totale=float(request.POST.get('totale', 0))
             )
 
-            # Salva i prodotti
+            # Gestisce i prodotti nel DB (retrieve o creazione)
+            # TODO: possibile togliere overhead di json.loads in quanto prodotti list è gia obj python
             prodotti_list = json.loads(prodotti_json)
             for prodotto_data in prodotti_list:
+                # TODO: controlla la struttura del prodotto_data, come mai accedo al nome prodotto_data[nome] ?
                 nome_prodotto = prodotto_data['nome']
 
                 # Cerca o crea il prodotto
                 prodotto = Prodotto.objects.filter(nome=nome_prodotto).first()
                 if not prodotto:
+                    # creo nuovo prodotto
                     prodotto = Prodotto.objects.create(nome=nome_prodotto)
                     # Se il prodotto è nuovo, assegna categoria 'altro'
                     categoria_altro, _ = Categoria.objects.get_or_create(
@@ -89,6 +93,7 @@ def carica_scontrino(request):
                     prodotto.categoria = categoria_altro
                     prodotto.save()
 
+                # creazione di una ListaProdotti dedicata per ogni prodotto dello scontrino, l'id scontrino rimane lo stesso
                 ListaProdotti.objects.create(
                     scontrino=scontrino,
                     prodotto=prodotto,
@@ -96,18 +101,22 @@ def carica_scontrino(request):
                     prezzo_unitario=float(prodotto_data['prezzo'])
                 )
 
+            # salvati tutti i prodotti == salvato lo scontrino con successo!
             messages.success(request, 'Scontrino salvato con successo')
             return redirect('scontrini:successo')
 
         except (json.JSONDecodeError, KeyError, ValueError) as e:
-            messages.error(request, 'Errore nel formato dei dati')
+            messages.error(request, 'Errore (JSON) nel formato dei dati')
             return redirect('scontrini:carica_scontrino')
+
+    # caso richiesta GET
+    # TODO: Categoria.objects.all() mi carica tutte le categoria per il form ?
     categorie = Categoria.objects.all()
     context = {
         'categorie': categorie,
         'categorie_json': json.dumps(list(categorie.values('id', 'nome')))
     }
-    return render(request, 'scontrini/carica_scontrino.html', context)
+    return render(request, 'scontrini/.html', context)
 
 
 # Handler della richiesta AJAX mandata da js per aggiungere un prodotto alla sessione
@@ -247,8 +256,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Converti il QuerySet in una lista di dizionari
         context['spese_giorno'] = list(spese_giorno)
 
-        # Top prodotti e supermercati
-        context['top_prodotti'] = self.get_top_prodotti(scontrini)
+        # Top categorie e supermercati
+        context['top_categorie'] = self.get_top_categorie(scontrini)
         context['top_supermercati'] = self.get_top_supermercati(scontrini)
 
         return context
@@ -272,10 +281,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'giorno').annotate(spesa_giornaliera=Sum('totale')).order_by('giorno')
         return spese
 
-    def get_top_prodotti(self, scontrini):
-        # Aggrega i prodotti ordinati per frequenza
-        return ListaProdotti.objects.filter(scontrino__in=scontrini).values('prodotto__nome').annotate(
-            total_ordinato=Sum('quantita')
+    def get_top_categorie(self, scontrini):
+        return ListaProdotti.objects.filter(scontrino__in=scontrini).values(
+            'prodotto__categoria__nome'
+        ).annotate(
+            total_ordinato=Sum('quantita'),
+            totale_speso=Sum(ExpressionWrapper(
+                F('prezzo_unitario') * F('quantita'),
+                output_field=FloatField()
+            ))
         ).order_by('-total_ordinato')[:5]
 
     def get_top_supermercati(self, scontrini):
@@ -323,13 +337,23 @@ def aggiorna_grafico(request):
     top_supermercati = list(scontrini.values('negozio__nome').annotate(
         frequenza=Count('negozio')).order_by('-frequenza')[:3])
 
+    top_categorie = ListaProdotti.objects.filter(scontrino__in=scontrini).values(
+        'prodotto__categoria__nome'
+    ).annotate(
+        total_ordinato=Sum('quantita'),
+        totale_speso=Sum(ExpressionWrapper(
+            F('prezzo_unitario') * F('quantita'),
+            output_field=FloatField()
+        ))
+    ).order_by('-total_ordinato')[:5]
+
     return JsonResponse({
         'labels': labels,
         'data': data,
         'numero_scontrini': numero_scontrini,
         'totale_speso': totale_speso,
         'numero_articoli': numero_articoli,
-        'top_prodotti': top_prodotti,
+        'top_categorie': list(top_categorie),
         'top_supermercati': top_supermercati,
         'filtro_attuale': filtro
     })
@@ -892,6 +916,7 @@ def crea_categoria(request):
 def aggiorna_categoria_prodotto(request):
     if request.method == 'POST':
         try:
+            # TODO: capire request.body
             data = json.loads(request.body)
             prodotto_id = data.get('prodotto_id')
             categoria_id = data.get('categoria_id')
@@ -940,3 +965,228 @@ def toggle_visualizzazione_categoria(request, scontrino_id):
                 'error': str(e)
             })
     return JsonResponse({'success': False, 'error': 'Metodo non permesso'})
+
+
+class DettagliCategoriaView(LoginRequiredMixin, DetailView):
+    model = Categoria
+    template_name = 'scontrini/dettagli_categoria.html'
+    context_object_name = 'categoria'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        categoria = self.get_object()
+        filtro = self.request.GET.get('filtro', 'all_time')
+
+        # Ottieni gli scontrini filtrati per data
+        if filtro == '1mese':
+            scontrini = Scontrino.objects.filter(
+                data__gte=now()-timedelta(days=30),
+                utente=self.request.user
+            )
+        elif filtro == '6mesi':
+            scontrini = Scontrino.objects.filter(
+                data__gte=now()-timedelta(days=180),
+                utente=self.request.user
+            )
+        elif filtro == '1anno':
+            scontrini = Scontrino.objects.filter(
+                data__gte=now()-timedelta(days=365),
+                utente=self.request.user
+            )
+        else:  # all_time
+            scontrini = Scontrino.objects.filter(utente=self.request.user)
+
+        # Filtra i prodotti per categoria e scontrini
+        lista_prodotti = ListaProdotti.objects.filter(
+            prodotto__categoria=categoria,
+            scontrino__in=scontrini
+        )
+
+        # Statistiche della categoria
+        context['quantita_totale'] = lista_prodotti.aggregate(
+            Sum('quantita'))['quantita__sum'] or 0
+        context['totale_speso'] = lista_prodotti.aggregate(
+            totale=Sum(F('prezzo_unitario') * F('quantita')))['totale'] or 0
+        context['numero_prodotti'] = Prodotto.objects.filter(
+            categoria=categoria).count()
+        context['prezzo_medio'] = (context['totale_speso'] /
+                                   context['quantita_totale']) if context['quantita_totale'] > 0 else 0
+        context['numero_supermercati'] = lista_prodotti.values(
+            'scontrino__negozio').distinct().count()
+        context['prezzo_piu_caro'] = lista_prodotti.aggregate(
+            Max('prezzo_unitario'))['prezzo_unitario__max'] or 0
+        context['prezzo_piu_economico'] = lista_prodotti.aggregate(
+            Min('prezzo_unitario'))['prezzo_unitario__min'] or 0
+        context['prima_volta_acquistato'] = lista_prodotti.aggregate(
+            Min('scontrino__data'))['scontrino__data__min']
+        context['ultima_volta_acquistato'] = lista_prodotti.aggregate(
+            Max('scontrino__data'))['scontrino__data__max']
+
+        return context
+
+
+class TutteCategorieView(LoginRequiredMixin, TemplateView):
+    template_name = 'scontrini/tutte_categorie.html'
+    categorie_per_pagina = 15
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        filtro = self.request.GET.get('filtro', 'all_time')
+        ordine = self.request.GET.get('ordine', '-quantita_totale')
+        page = self.request.GET.get('page', 1)
+
+        # Ottieni gli scontrini filtrati
+        scontrini = self.get_scontrini_filtrati(filtro, user)
+
+        # Query per le statistiche delle categorie
+        categorie = ListaProdotti.objects.filter(
+            scontrino__in=scontrini
+        ).values(
+            'prodotto__categoria__nome',
+            'prodotto__categoria__id'
+        ).annotate(
+            quantita_totale=Sum('quantita'),
+            totale_speso=Sum(ExpressionWrapper(
+                F('prezzo_unitario') * F('quantita'),
+                output_field=FloatField()
+            )),
+            numero_prodotti=Count('prodotto', distinct=True),
+            prezzo_medio=ExpressionWrapper(
+                Sum(F('prezzo_unitario') * F('quantita')) / Sum('quantita'),
+                output_field=FloatField()
+            )
+        ).exclude(
+            prodotto__categoria__isnull=True
+        )
+
+        # Applica l'ordinamento
+        if ordine == '-quantita_totale':
+            categorie = categorie.order_by('-quantita_totale')
+        elif ordine == '-totale_speso':
+            categorie = categorie.order_by('-totale_speso')
+        elif ordine == '-numero_prodotti':
+            categorie = categorie.order_by('-numero_prodotti')
+        elif ordine == 'nome':
+            categorie = categorie.order_by('prodotto__categoria__nome')
+
+        # Paginazione
+        paginator = Paginator(list(categorie), self.categorie_per_pagina)
+        categorie_paginate = paginator.get_page(page)
+
+        context['categorie'] = categorie_paginate
+        context['filtro_attuale'] = filtro
+        context['ordine_attuale'] = ordine
+        return context
+
+    def get_scontrini_filtrati(self, filtro, user):
+        if filtro == '1mese':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=30), utente=user)
+        elif filtro == '6mesi':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=180), utente=user)
+        elif filtro == '1anno':
+            return Scontrino.objects.filter(data__gte=now()-timedelta(days=365), utente=user)
+        else:
+            return Scontrino.objects.filter(utente=user)
+
+
+@login_required
+def aggiorna_tabella_categorie(request):
+    filtro = request.GET.get('filtro', 'all_time')
+    ordine = request.GET.get('ordine', '-quantita_totale')
+    page = request.GET.get('page', 1)
+    user = request.user
+
+    # Ottieni gli scontrini filtrati
+    if filtro == '1mese':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=30), utente=user)
+    elif filtro == '6mesi':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=180), utente=user)
+    elif filtro == '1anno':
+        scontrini = Scontrino.objects.filter(
+            data__gte=now()-timedelta(days=365), utente=user)
+    else:
+        scontrini = Scontrino.objects.filter(utente=user)
+
+    # Query per le statistiche delle categorie
+    categorie = ListaProdotti.objects.filter(
+        scontrino__in=scontrini
+    ).values(
+        'prodotto__categoria__nome',
+        'prodotto__categoria__id'
+    ).annotate(
+        quantita_totale=Sum('quantita'),
+        totale_speso=Sum(ExpressionWrapper(
+            F('prezzo_unitario') * F('quantita'),
+            output_field=FloatField()
+        )),
+        numero_prodotti=Count('prodotto', distinct=True),
+        prezzo_medio=ExpressionWrapper(
+            Sum(F('prezzo_unitario') * F('quantita')) / Sum('quantita'),
+            output_field=FloatField()
+        )
+    ).exclude(
+        prodotto__categoria__isnull=True
+    )
+
+    # Applica l'ordinamento
+    if ordine == '-quantita_totale':
+        categorie = categorie.order_by('-quantita_totale')
+    elif ordine == '-totale_speso':
+        categorie = categorie.order_by('-totale_speso')
+    elif ordine == '-numero_prodotti':
+        categorie = categorie.order_by('-numero_prodotti')
+    elif ordine == 'nome':
+        categorie = categorie.order_by('prodotto__categoria__nome')
+
+    # Paginazione
+    # stesso numero per pagina di tutti_prodotti
+    paginator = Paginator(list(categorie), 15)
+    categorie_paginate = paginator.get_page(page)
+
+    # Renderizza il template parziale corretto
+    html = render_to_string('scontrini/partials/categorie_list.html', {
+        'categorie': categorie_paginate,
+        'filtro_attuale': filtro,
+        'ordine_attuale': ordine
+    })
+
+    # Renderizza la paginazione
+    pagination_html = render_to_string('scontrini/partials/pagination.html', {
+        'categorie': categorie_paginate,  # Nota: cambiato da supermercati a categorie
+        'filtro_attuale': filtro,
+        'ordine_attuale': ordine
+    })
+
+    return JsonResponse({
+        'html': html,
+        'pagination': pagination_html
+    })
+
+
+# visualizzare tutti i prodotti che appartengono ad una categoria
+@login_required
+def prodotti_categoria(request, categoria_id):
+    page = request.GET.get('page', 1)
+    categoria = get_object_or_404(Categoria, id=categoria_id)
+
+    prodotti = ListaProdotti.objects.filter(
+        scontrino__utente=request.user,
+        prodotto__categoria=categoria
+    ).values(
+        'prodotto__id',
+        'prodotto__nome'
+    ).distinct().order_by('prodotto__nome')
+
+    paginator = Paginator(list(prodotti), 15)
+    prodotti_paginati = paginator.get_page(page)
+
+    html = render_to_string('scontrini/partials/prodotti_categoria_list.html', {
+        'prodotti': prodotti_paginati
+    })
+
+    return JsonResponse({
+        'html': html
+    })
